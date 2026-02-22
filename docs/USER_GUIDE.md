@@ -200,8 +200,9 @@ When integrated mode is active, each request passes through:
 | **2. Instruction validation** | Check that the input is valid and processable | Ensures the request is well-formed and can be handled. |
 | **3. System integrity** | Ensure the request doesn’t threaten system safety | Validates that processing the request is safe for the system. |
 | **4. Wellbeing assessment** | Estimate impact on individual and collective wellbeing | Produces metadata used for logging and transparency; does not block by itself. |
+| **5. Optional systems** | Run additional ethical subsystems | EthicalContext, CoreEthicalProcessor, BiasDetectionSystem, ValueConflictResolver, DistributedEthicsSystem, ErrorRecoverySystem, EthicalSecuritySystem, RealTimeDecisionFramework, EthicalMemorySystem, EthicalLearningSystem. Outcomes recorded in `metadata.optional_systems` (run/error per system). Pipeline continues even if a subsystem errors. |
 
-If any of layers 1–3 decide to block, the user receives a block message and **no** call is made to the AI. If all pass, the system builds the conversation (system message + history + user message), applies your **model parameters** (temperature, max_tokens, etc.), and calls the OpenRouter API to generate the response.
+If any of layers 1–3 decide to block, the user receives a block message and **no** call is made to the AI. If all pass, the optional systems (layer 5) run, then the system builds the conversation (system message + history + user message), applies your **model parameters** (temperature, max_tokens, etc.), and calls the OpenRouter API to generate the response. The **response is then filtered** through the OutputSafetyLayer before being returned. See `docs/INTEGRATION_STATUS_VERIFICATION.md` for details.
 
 ## 2.4 Simplified Processing (fallback)
 
@@ -214,11 +215,12 @@ If the integrated system is not loaded, the app uses a simplified path:
 
 Crisis mode still bypasses blocking in this path.
 
-## 2.5 Response Generation
+## 2.5 Response Generation and Output Safety
 
 - **System prompt**: Different in crisis mode (allows crisis/humanitarian discussion) vs normal mode (general ethical assistant).
 - **Context**: Previous user/assistant messages from the current conversation.
 - **Model parameters**: All UI parameters (temperature, max_tokens, top_p, top_k, frequency_penalty, presence_penalty, repetition_penalty, seed, stop_sequences, min_p, top_a) are sent to OpenRouter as documented in the Parameters section.
+- **Output safety**: After the API returns a response, it is passed through the OutputSafetyLayer (when using the integrated processor) before being sent to the client.
 
 ---
 

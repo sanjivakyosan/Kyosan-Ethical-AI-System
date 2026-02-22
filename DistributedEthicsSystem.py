@@ -1,3 +1,9 @@
+class GlobalConsistency:
+    """Stub for global consistency return type."""
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
 class DistributedEthicsSystem:
     """
     System for managing distributed ethical processing across multiple nodes

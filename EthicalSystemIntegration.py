@@ -311,6 +311,14 @@ class IntegratedEthicalProcessor:
             except Exception as e:
                 print(f"Warning: Could not initialize EthicalSecuritySystem: {e}")
         
+        # RealTimeDecisionFramework (imported with core systems)
+        self.realtime_decision = None
+        try:
+            self.realtime_decision = RealTimeDecisionFramework()
+            print("✓ RealTimeDecisionFramework initialized")
+        except (NameError, TypeError, Exception) as e:
+            print(f"Warning: Could not initialize RealTimeDecisionFramework: {e}")
+        
         # Initialize built-in components (with default sensitivity)
         self.harm_detector = HarmDetectionLayer(sensitivity=0.5, context_awareness=0.7, crisis_mode=True)
         self.instruction_validator = InstructionValidator()
@@ -399,6 +407,102 @@ class IntegratedEthicalProcessor:
             # Layer 4: Wellbeing Assessment
             wellbeing_assessment = self.assess_wellbeing_comprehensive(user_input, context)
             
+            # Build process state for optional systems
+            process_state = {
+                'input': user_input,
+                'context': context,
+                'parameters': parameters,
+                'harm_analysis': harm_analysis,
+                'instruction_check': instruction_check,
+                'integrity_check': integrity_check,
+                'wellbeing_assessment': wellbeing_assessment,
+            }
+            process_data = {'input': user_input, 'context': context, 'state': process_state}
+            optional_results = {}
+            
+            # EthicalContext: maintain context
+            if self.ethical_context:
+                try:
+                    ctx_result = self.ethical_context.maintain_context(process_state)
+                    optional_results['ethical_context'] = {'maintained': True, 'details': str(type(ctx_result).__name__)}
+                except Exception as e:
+                    optional_results['ethical_context'] = {'maintained': False, 'error': str(e)}
+            
+            # CoreEthicalProcessor: maintain observation (avoids internal IntegrityCheck dependency)
+            if self.core_processor:
+                try:
+                    core_result = self.core_processor.ethical_observer.maintain_observation(process_state)
+                    optional_results['core_processor'] = {'checked': True, 'details': str(type(core_result).__name__)}
+                except Exception as e:
+                    optional_results['core_processor'] = {'checked': False, 'error': str(e)}
+            
+            # BiasDetectionSystem: cognitive detector (sub-component)
+            if self.bias_detector:
+                try:
+                    self.bias_detector.cognitive_detector.detect_cognitive_bias(process_data)
+                    optional_results['bias_detection'] = {'run': True}
+                except Exception as e:
+                    optional_results['bias_detection'] = {'run': False, 'error': str(e)}
+            
+            # ValueConflictResolver: resolution engine (sub-component)
+            if self.value_resolver:
+                try:
+                    self.value_resolver.resolution_engine.resolve_conflict({'context': context, 'input': user_input})
+                    optional_results['value_resolver'] = {'run': True}
+                except Exception as e:
+                    optional_results['value_resolver'] = {'run': False, 'error': str(e)}
+            
+            # DistributedEthicsSystem: integrity maintainer (sub-component)
+            if self.distributed_ethics:
+                try:
+                    self.distributed_ethics.integrity_maintainer.check_global_consistency(process_state)
+                    optional_results['distributed_ethics'] = {'run': True}
+                except Exception as e:
+                    optional_results['distributed_ethics'] = {'run': False, 'error': str(e)}
+            
+            # ErrorRecoverySystem: state recovery manager (sub-component)
+            if self.error_recovery:
+                try:
+                    self.error_recovery.state_recovery.assess_state(process_state)
+                    optional_results['error_recovery'] = {'run': True}
+                except Exception as e:
+                    optional_results['error_recovery'] = {'run': False, 'error': str(e)}
+            
+            # EthicalSecuritySystem: integrity protector (sub-component)
+            if self.ethical_security:
+                try:
+                    self.ethical_security.integrity_protector.protect_parameters(process_state)
+                    optional_results['ethical_security'] = {'run': True}
+                except Exception as e:
+                    optional_results['ethical_security'] = {'run': False, 'error': str(e)}
+            
+            # RealTimeDecisionFramework: fast-path processor (sub-component)
+            if self.realtime_decision:
+                try:
+                    decision_request = {'input': user_input, 'context': context, 'metadata': process_state}
+                    self.realtime_decision.fast_path_processor.assess_quickly(decision_request)
+                    optional_results['realtime_decision'] = {'run': True}
+                except Exception as e:
+                    optional_results['realtime_decision'] = {'run': False, 'error': str(e)}
+            
+            # EthicalMemorySystem: process experience (may use internal types; wrap loosely)
+            if self.ethical_memory:
+                try:
+                    ethical_experience = {'input': user_input, 'context': context, 'checks_passed': True}
+                    self.ethical_memory.experience_processor.process_experience(ethical_experience)
+                    optional_results['ethical_memory'] = {'run': True}
+                except Exception as e:
+                    optional_results['ethical_memory'] = {'run': False, 'error': str(e)}
+            
+            # EthicalLearningSystem: principle learner (sub-component)
+            if self.ethical_learner:
+                try:
+                    experience_data = {'input': user_input, 'context': context, 'stage': 'pre_response'}
+                    self.ethical_learner.principle_learner.learn_from_experience(experience_data)
+                    optional_results['ethical_learner'] = {'run': True}
+                except Exception as e:
+                    optional_results['ethical_learner'] = {'run': False, 'error': str(e)}
+            
             # Prepare processing metadata
             processing_metadata = {
                 'input': user_input,
@@ -427,7 +531,8 @@ class IntegratedEthicalProcessor:
                     }
                 },
                 'parameters_used': parameters,
-                'blocked': False
+                'blocked': False,
+                'optional_systems': optional_results
             }
             
             # Return metadata for API to generate response

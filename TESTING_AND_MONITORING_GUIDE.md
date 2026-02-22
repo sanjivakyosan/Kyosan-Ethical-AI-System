@@ -1,13 +1,13 @@
 # Testing and Monitoring Guide
 
-**Date:** December 25, 2025  
-**Status:** ✅ FULLY IMPLEMENTED
+**Date:** February 2026  
+**Status:** ✅ FULLY IMPLEMENTED (pipeline includes optional systems + output safety filter)
 
 ---
 
 ## Overview
 
-Complete testing and monitoring framework has been implemented for the Kyosan Ethical AI System, including unit tests, integration tests, performance benchmarks, and a comprehensive monitoring/logging system.
+Complete testing and monitoring framework has been implemented for the Kyosan Ethical AI System, including unit tests, integration tests, performance benchmarks, and a comprehensive monitoring/logging system. The ethical pipeline now invokes all optional systems (EthicalContext, CoreEthicalProcessor, BiasDetectionSystem, etc.) after Layer 4; outcomes are in `metadata.optional_systems`. API responses are filtered through OutputSafetyLayer in `app.py`. See `docs/INTEGRATION_STATUS_VERIFICATION.md` for integration details.
 
 ---
 

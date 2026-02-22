@@ -74,11 +74,17 @@ http://localhost:5000
 - **Buttons/Controls**: Red (#ff0000)
 - **Font**: Courier New monospace
 
+## Ethical Processing
+
+- **Pipeline:** Every request passes through harm detection → instruction validation → system integrity → wellbeing assessment, then optional systems (EthicalContext, CoreEthicalProcessor, BiasDetectionSystem, ValueConflictResolver, DistributedEthicsSystem, ErrorRecoverySystem, EthicalSecuritySystem, RealTimeDecisionFramework, EthicalMemorySystem, EthicalLearningSystem). Results are in `metadata.optional_systems`.
+- **Response filtering:** API responses are passed through the OutputSafetyLayer (when using the integrated processor) before being returned to the client.
+- See `docs/INTEGRATION_STATUS_VERIFICATION.md` for full integration details.
+
 ## Notes
 
 - Conversations are saved as JSON files in the `conversations/` directory
 - The system integrates with your existing ethical processing framework
-- All responses go through ethical checks (harm detection, instruction validation, system integrity, wellbeing assessment)
+- All responses go through ethical checks (harm detection, instruction validation, system integrity, wellbeing assessment) and optional ethical subsystems
 
 ---
 

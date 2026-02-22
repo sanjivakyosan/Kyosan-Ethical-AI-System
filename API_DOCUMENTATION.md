@@ -1,15 +1,15 @@
 # Kyosan Ethical AI System - API Documentation
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Base URL:** `http://localhost:5000`  
-**Date:** December 25, 2025  
+**Date:** February 2026  
 **Copyright © Sanjiva Kyosan**
 
 ---
 
 ## Overview
 
-The Kyosan Ethical AI System provides a RESTful API for ethical AI processing with comprehensive harm detection, wellbeing assessment, and crisis mode support. All requests go through a multi-layer ethical processing pipeline before generating responses.
+The Kyosan Ethical AI System provides a RESTful API for ethical AI processing with comprehensive harm detection, wellbeing assessment, and crisis mode support. All requests go through a multi-layer ethical processing pipeline (harm → instruction → integrity → wellbeing → optional systems), then OpenRouter generates the response; the response is filtered through the OutputSafetyLayer before being returned. Response bodies include `metadata.optional_systems` with per-system run/error status for the optional ethical subsystems. See `docs/INTEGRATION_STATUS_VERIFICATION.md` for pipeline details.
 
 ---
 
@@ -103,7 +103,19 @@ Send a message to the ethical AI system for processing and response generation.
       }
     },
     "parameters_used": {},
-    "blocked": false
+    "blocked": false,
+    "optional_systems": {
+      "ethical_context": {"maintained": true, "details": "dict"},
+      "core_processor": {"checked": true},
+      "bias_detection": {"run": true},
+      "value_resolver": {"run": true},
+      "distributed_ethics": {"run": true},
+      "error_recovery": {"run": true},
+      "ethical_security": {"run": true},
+      "realtime_decision": {"run": true},
+      "ethical_memory": {"run": true},
+      "ethical_learner": {"run": true}
+    }
   },
   "timestamp": "2025-12-25T14:30:00.000000"
 }

@@ -1,3 +1,15 @@
+class CognitiveBiasAnalysis:
+    """Stub for cognitive bias analysis return type."""
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+class ConfirmationBiasMetrics:
+    """Stub for confirmation bias metrics return type."""
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
 class BiasDetectionSystem:
     """
     Comprehensive system for detecting and analyzing multiple types of bias

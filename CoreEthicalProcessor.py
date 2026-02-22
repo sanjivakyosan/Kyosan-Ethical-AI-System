@@ -1,3 +1,15 @@
+class ObservationState:
+    """Stub for observation state return type."""
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+class EthicalAwareness:
+    """Stub for ethical awareness return type."""
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
 class CoreEthicalProcessor:
     """
     Core system for maintaining ethical processing integrity

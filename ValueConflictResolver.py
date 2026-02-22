@@ -1,3 +1,15 @@
+class ResolutionStrategy:
+    """Stub for resolution strategy return type."""
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+class Strategy:
+    """Stub for strategy return type."""
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
 class ValueConflictResolver:
     """
     System for resolving conflicts between competing ethical values

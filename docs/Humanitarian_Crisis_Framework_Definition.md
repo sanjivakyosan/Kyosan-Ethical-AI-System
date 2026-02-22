@@ -38,4 +38,6 @@ In the Kyosan / gold-standard version, the framework is implemented through **th
 
 ---
 
+**Implementation:** In the Kyosan Ethical AI System, the pipeline (harm detection, instruction validation, integrity, wellbeing, optional ethical subsystems, and output safety filter) supports consistent application of these blocks; see `docs/INTEGRATION_STATUS_VERIFICATION.md` and `docs/USER_GUIDE.md`.
+
 *Kyosan Ethical AI System — Humanitarian Crisis Framework*

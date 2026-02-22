@@ -86,6 +86,23 @@ class EthicalProcessorAPI:
             'timestamp': datetime.now().isoformat()
         }
     
+    def filter_response(self, response_text, context=None):
+        """
+        Filter API response through output safety layer when using integrated processor.
+        Returns filtered text; if no filter available, returns response_text unchanged.
+        """
+        if response_text is None:
+            return None
+        if context is None:
+            context = []
+        if self.use_integrated and hasattr(self, 'integrated_processor') and self.integrated_processor is not None:
+            try:
+                if hasattr(self.integrated_processor, 'output_safety') and self.integrated_processor.output_safety is not None:
+                    return self.integrated_processor.output_safety.filter(response_text, context)
+            except Exception as e:
+                print(f"Warning: output_safety filter failed: {e}")
+        return response_text
+    
     def _simplified_processing(self, user_input, context, parameters):
         """Fallback simplified processing"""
         # Ensure parameters are passed correctly
@@ -391,6 +408,8 @@ def chat():
                 )
             else:
                 response = result['response']
+            # Filter response through output safety layer (when using integrated processor)
+            response = processor.filter_response(response, context)
         except Exception as e:
             import traceback
             print(f"Error in generate_response: {str(e)}")

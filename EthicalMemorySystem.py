@@ -1,3 +1,9 @@
+class ProcessedExperience:
+    """Stub for processed experience return type."""
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
 class EthicalMemorySystem:
     """
     System for learning and evolving ethical understanding while maintaining principles

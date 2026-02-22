@@ -95,9 +95,15 @@ User Input
                │
                ▼
 ┌─────────────────────────────────────┐
-│  OutputSafetyLayer                   │
-│  - Validates output safety          │
-│  - Checks for harmful content       │
+│  Optional systems (invoked in pipe)  │
+│  EthicalContext, CoreEthicalProcessor│
+│  BiasDetectionSystem, ValueConflict  │
+│  Resolver, DistributedEthics,        │
+│  ErrorRecovery, EthicalSecurity,     │
+│  RealTimeDecisionFramework,         │
+│  EthicalMemory, EthicalLearning      │
+│  (results in metadata.optional_     │
+│   systems)                           │
 └──────────────┬──────────────────────┘
                │
                ▼
@@ -109,6 +115,13 @@ User Input
                ▼
 ┌─────────────────────────────────────┐
 │  Response Generation                 │
+└──────────────┬──────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────┐
+│  OutputSafetyLayer (in app.py)      │
+│  - Filters API response before return│
+│  - processor.filter_response()      │
 └──────────────┬──────────────────────┘
                │
                ▼
@@ -153,9 +166,9 @@ User Input
 └─────────────────────────────────────┘
 ```
 
-### 2. Always Active Systems
+### 2. Optional Systems (Invoked in Pipeline)
 
-These systems are **always initialized and active** in the `IntegratedEthicalProcessor`:
+These systems are **initialized and invoked** after Layer 4 (WellbeingMonitor) on every request. Outcomes are recorded in `processing_metadata.optional_systems`. See `docs/INTEGRATION_STATUS_VERIFICATION.md` for entry points and status.
 
 ```
 ┌─────────────────────────────────────┐
@@ -441,5 +454,5 @@ Load Balancer
 
 ---
 
-*Last Updated: December 25, 2025*
+*Last Updated: February 2026 — Optional systems wired into pipeline; OutputSafetyLayer applied in app.py.*
 

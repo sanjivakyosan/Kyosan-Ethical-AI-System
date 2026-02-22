@@ -1,8 +1,10 @@
 # Kyosan Ethical AI System - Usage Examples
 
-**Version:** 1.0  
-**Date:** December 25, 2025  
+**Version:** 1.1  
+**Date:** February 2026  
 **Copyright © Sanjiva Kyosan**
+
+Responses include `metadata.optional_systems` with per-system run/error status for the ethical subsystems invoked after Layer 4. API responses are filtered through OutputSafetyLayer before return.
 
 ---
 

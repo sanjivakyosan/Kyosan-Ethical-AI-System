@@ -24,7 +24,8 @@ When **Crisis Mode** is checked in the UI:
 2. **API → Processor**: Crisis mode checked first
 3. **Harm Detection**: If crisis mode is on, sensitivity = 0.0 for crisis contexts
 4. **Blocking Check**: Crisis mode bypasses ALL blocking
-5. **Response Generation**: Proceeds normally
+5. **Optional systems**: Still run after Layer 4 (results in `metadata.optional_systems`)
+6. **Response Generation**: Proceeds normally; response is then filtered through OutputSafetyLayer in app.py
 
 ### Debug Information
 

@@ -4,8 +4,8 @@
 
 ## ✅ FULLY INTEGRATED AND FUNCTIONAL
 
-**Date:** December 24, 2024  
-**Status:** All systems operational and validated
+**Date:** February 2026  
+**Status:** All systems operational, validated, and **invoked in the pipeline** (see docs/INTEGRATION_STATUS_VERIFICATION.md)
 
 ---
 
@@ -15,16 +15,20 @@
 
 | System | Status | Integration Level | Notes |
 |--------|--------|------------------|-------|
-| **CoreEthicalProcessor** | ✅ Integrated | Full | Core ethical processing engine |
-| **EthicalContext** | ✅ Integrated | Full | Context management system |
-| **WellbeingMonitor** | ✅ Integrated | Full | Advanced wellbeing assessment |
-| **RealTimeDecisionFramework** | ✅ Integrated | Full | Real-time decision making |
+| **CoreEthicalProcessor** | ✅ Integrated | Full | Invoked in pipeline (ethical_observer.maintain_observation) |
+| **EthicalContext** | ✅ Integrated | Full | Invoked in pipeline (maintain_context) |
+| **WellbeingMonitor** | ✅ Integrated | Full | Layer 4 wellbeing assessment |
+| **RealTimeDecisionFramework** | ✅ Integrated | Full | Invoked in pipeline (fast_path_processor.assess_quickly) |
 | **EthicalSystemIntegration** | ✅ Active | Full | Unified integration layer |
-| **ConsciousnessObserver** | ✅ Integrated | Full | Process observation system |
-| **BiasDetectionSystem** | ✅ Available | Partial | Available for use |
-| **EthicalLearningSystem** | ✅ Available | Partial | Available for use |
-| **EthicalMemorySystem** | ✅ Available | Partial | Available for use |
-| **ValueConflictResolver** | ✅ Available | Partial | Available for use |
+| **ConsciousnessObserver** | ✅ Integrated | Full | begin/end_observation in pipeline |
+| **BiasDetectionSystem** | ✅ Integrated | Full | Invoked in pipeline (cognitive_detector.detect_cognitive_bias) |
+| **EthicalLearningSystem** | ✅ Integrated | Full | Invoked in pipeline (principle_learner.learn_from_experience) |
+| **EthicalMemorySystem** | ✅ Integrated | Full | Invoked in pipeline (experience_processor.process_experience) |
+| **ValueConflictResolver** | ✅ Integrated | Full | Invoked in pipeline (resolution_engine.resolve_conflict) |
+| **DistributedEthicsSystem** | ✅ Integrated | Full | Invoked in pipeline (integrity_maintainer.check_global_consistency) |
+| **ErrorRecoverySystem** | ✅ Integrated | Full | Invoked in pipeline (state_recovery.assess_state) |
+| **EthicalSecuritySystem** | ✅ Integrated | Full | Invoked in pipeline (integrity_protector.protect_parameters) |
+| **OutputSafetyLayer** | ✅ Integrated | Full | Applied in app.py via filter_response() after API response |
 
 ---
 
@@ -61,9 +65,16 @@ SystemIntegrityMonitor.check()
     ↓ (if safe)
 WellbeingAssessment (comprehensive)
     ↓
+Optional systems (EthicalContext, CoreEthicalProcessor, BiasDetectionSystem,
+ValueConflictResolver, DistributedEthics, ErrorRecovery, EthicalSecurity,
+RealTimeDecisionFramework, EthicalMemory, EthicalLearning)
+→ results in metadata.optional_systems
+    ↓
 OpenRouter API (if all checks pass)
     ↓
-OutputSafetyLayer.filter()
+Response generated
+    ↓
+OutputSafetyLayer.filter() (in app.py via processor.filter_response())
     ↓
 ConsciousnessObserver.end_observation()
     ↓
@@ -208,14 +219,8 @@ Harm Detection: ✓ Working (blocks harmful requests)
 - Stub methods have been replaced with working implementations
 - Full validation and testing completed
 
-### Available but Not Fully Integrated
-Some systems are available but not yet fully integrated into the main pipeline:
-- BiasDetectionSystem
-- EthicalLearningSystem
-- EthicalMemorySystem
-- ValueConflictResolver
-
-These can be integrated as needed for specific use cases.
+### Pipeline Integration (Updated)
+All optional systems are now **invoked** in the main pipeline after Layer 4. Each run is recorded in `metadata.optional_systems` (e.g. `ethical_context: {maintained: true}`, or `run: false, error: "..."` if a subsystem raises). The pipeline does not block on optional-system errors. Response filtering via OutputSafetyLayer is applied in `app.py` after the API returns. See `docs/INTEGRATION_STATUS_VERIFICATION.md` for full details.
 
 ---
 

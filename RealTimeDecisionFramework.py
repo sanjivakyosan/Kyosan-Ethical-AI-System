@@ -1,3 +1,9 @@
+class QuickAssessment:
+    """Stub for quick assessment return type."""
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
 class RealTimeDecisionFramework:
     """
     Framework for real-time ethical decision making

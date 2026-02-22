@@ -1,3 +1,9 @@
+class ParameterProtection:
+    """Stub for parameter protection return type."""
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
 class EthicalSecuritySystem:
     """
     Comprehensive security system for protecting ethical AI processing

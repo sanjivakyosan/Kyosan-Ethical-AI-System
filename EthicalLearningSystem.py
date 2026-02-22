@@ -1,3 +1,15 @@
+class LearningProcess:
+    """Stub for learning process return type."""
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+class PrincipleLearning:
+    """Stub for principle learning return type."""
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
 class EthicalLearningSystem:
     """
     Comprehensive system for ethical learning and adaptation

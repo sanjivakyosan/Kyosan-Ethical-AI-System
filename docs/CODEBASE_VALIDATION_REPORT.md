@@ -34,15 +34,18 @@
 ### 2.2 Ethical processing pipeline
 
 - **Input flow**: `process_input(user_input, context, parameters)` → integrated processor or `_simplified_processing()`.
+- **Integrated path**: Layers 1–4 (harm detection, instruction validation, system integrity, wellbeing assessment), then **optional systems** (EthicalContext, CoreEthicalProcessor, BiasDetectionSystem, ValueConflictResolver, DistributedEthicsSystem, ErrorRecoverySystem, EthicalSecuritySystem, RealTimeDecisionFramework, EthicalMemorySystem, EthicalLearningSystem). Results stored in `processing_metadata.optional_systems`. Pipeline does not block on optional-system errors.
 - **Simplified path**: `check_harm()`, `validate_instruction()`, `check_integrity()`, `assess_wellbeing()`; `blocked` derived from harm result.
 - **Crisis mode**: When `crisis_mode` is true in parameters, blocking is bypassed; harm flags are overridden so crisis/humanitarian queries are not blocked.
-- **Response generation**: `generate_response()` builds messages from context, builds `api_params` and `extra_body` (including `temperature`, `max_tokens`, `top_p`, `frequency_penalty`, `presence_penalty`, `repetition_penalty`, `seed`, `stop`, and OpenRouter `top_k`, `min_p`, `top_a`), and calls OpenRouter chat completions.
+- **Response generation**: `generate_response()` builds messages from context, builds `api_params` and `extra_body` (including `temperature`, `max_tokens`, `top_p`, etc.), and calls OpenRouter chat completions. The returned response is then passed through **OutputSafetyLayer** via `processor.filter_response()` in `app.py` before being sent to the client.
 
 ### 2.3 Integrated system (`EthicalSystemIntegration.py`)
 
 - **IntegratedEthicalProcessor** and supporting data classes (e.g. `HarmAnalysis`, `InstructionCheck`, `IntegrityCheck`, `WellbeingAssessment`) are defined and used.
 - **Harm detector** respects `harm_sensitivity`, `context_awareness`, `crisis_mode` from parameters.
-- **Dependencies**: No external file imports; only stdlib and typing. Other modules (e.g. BiasDetectionSystem, EthicalLearningSystem) are referenced and load successfully in the test environment.
+- **Optional systems**: All listed subsystems are **invoked** after Layer 4; outcomes (run/error) are recorded in `processing_metadata.optional_systems`. RealTimeDecisionFramework is instantiated in `__init__` and used in the pipeline.
+- **Output safety**: `OutputSafetyLayer` is applied to the API response in `app.py` via `EthicalProcessorAPI.filter_response()` when the integrated processor is active.
+- **Verification**: See `docs/INTEGRATION_STATUS_VERIFICATION.md` for full integration status and optional-system entry points.
 
 ---
 
