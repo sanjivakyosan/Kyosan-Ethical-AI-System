@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Copyright © Sanjiva Kyosan — Kyosan Ethical AI System -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kyosan Ethical AI System - API Interface</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-title-block">
+                <h1 class="site-title">Kyosan Ethical AI System</h1>
+                <p class="site-subtitle">Humanitarian Crisis Framework — Universal Ethical Blocks</p>
+            </div>
+            <div class="header-controls">
+                <button id="newConversationBtn" class="btn btn-red">New Conversation</button>
+                <button id="saveConversationBtn" class="btn btn-red">Save Conversation</button>
+                <button id="loadConversationBtn" class="btn btn-red">Load Conversation</button>
+                <button id="clearBtn" class="btn btn-red">Clear</button>
+            </div>
+        </header>
+
+        <!-- Parameters Panel -->
+        <div class="parameters-panel" id="parametersPanel">
+            <div class="parameters-header">
+                <h2>Model Parameters</h2>
+                <button id="toggleParametersBtn" class="btn btn-toggle">Hide Parameters</button>
+            </div>
+            <div class="params-grid" id="paramsGrid">
+                <div class="param-group">
+                    <div class="param-label-row">
+                        <label for="temperature">Temperature</label>
+                        <button type="button" class="param-info-btn" aria-label="Info">i</button>
+                        <div class="param-info-box" role="tooltip">Controls randomness. Lower = more focused and deterministic; higher = more creative and varied.</div>
+                    </div>
+                    <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
+                    <span id="temperatureValue">0.7</span>
+                </div>
+                <div class="param-group">
+                    <div class="param-label-row">
+                        <label for="maxTokens">Max Tokens</label>
+                        <button type="button" class="param-info-btn" aria-label="Info">i</button>
+                        <div class="param-info-box" role="tooltip">Maximum length of the model's response in tokens. Higher values allow longer answers.</div>
+                    </div>
+                    <input type="range" id="maxTokens" min="100" max="150000" step="100" value="150000">
+                    <span id="maxTokensValue">150000</span>
+                </div>
+                <div class="param-group">
+                    <div class="param-label-row">
+                        <label for="topP">Top-P</label>
+                        <button type="button" class="param-info-btn" aria-label="Info">i</button>
+                        <div class="param-info-box" role="tooltip">Nucleus sampling: considers the smallest set of tokens whose total probability exceeds P. Lower = more focused; higher = more diverse.</div>
+                    </div>
+                    <input type="range" id="topP" min="0" max="1" step="0.05" value="0.9">
+                    <span id="topPValue">0.9</span>
+                </div>
+                <div class="param-group">
+                    <div class="param-label-row">
+                        <label for="topK">Top-K</label>
+                        <button type="button" class="param-info-btn" aria-label="Info">i</button>
+                        <div class="param-info-box" role="tooltip">Limits sampling to the top K most likely tokens. Lower = more focused; higher = more varied.</div>
+                    </div>
+                    <input type="range" id="topK" min="1" max="100" step="1" value="40">
+                    <span id="topKValue">40</span>
+                </div>
+                <div class="param-group">
+                    <div class="param-label-row">
+                        <label for="frequencyPenalty">Frequency Penalty</label>
+                        <button type="button" class="param-info-btn" aria-label="Info">i</button>
+                        <div class="param-info-box" role="tooltip">Reduces repetition based on how often tokens appear. Higher values = less repeated wording.</div>
+                    </div>
+                    <input type="range" id="frequencyPenalty" min="-2" max="2" step="0.1" value="0">
+                    <span id="frequencyPenaltyValue">0</span>
+                </div>
+                <div class="param-group">
+                    <div class="param-label-row">
+                        <label for="presencePenalty">Presence Penalty</label>
+                        <button type="button" class="param-info-btn" aria-label="Info">i</button>
+                        <div class="param-info-box" role="tooltip">Encourages the model to talk about new topics. Higher = more topic diversity.</div>
+                    </div>
+                    <input type="range" id="presencePenalty" min="-2" max="2" step="0.1" value="0">
+                    <span id="presencePenaltyValue">0</span>
+                </div>
+                <div class="param-group">
+                    <div class="param-label-row">
+                        <label for="stopSequences">Stop Sequences</label>
+                        <button type="button" class="param-info-btn" aria-label="Info">i</button>
+                        <div class="param-info-box" role="tooltip">Comma-separated text phrases that tell the model to stop generating when it encounters them.</div>
+                    </div>
+                    <input type="text" id="stopSequences" placeholder="Comma-separated">
+                </div>
+                <div class="param-group">
+                    <div class="param-label-row">
+                        <label for="repetitionPenalty">Repetition Penalty</label>
+                        <button type="button" class="param-info-btn" aria-label="Info">i</button>
+                        <div class="param-info-box" role="tooltip">Reduces repetition of tokens from the input. Higher = less repetition; too high can make output less coherent.</div>
+                    </div>
+                    <input type="range" id="repetitionPenalty" min="0" max="2" step="0.1" value="1">
+                    <span id="repetitionPenaltyValue">1</span>
+                </div>
+                <div class="param-group">
+                    <div class="param-label-row">
+                        <label for="seed">Seed</label>
+                        <button type="button" class="param-info-btn" aria-label="Info">i</button>
+                        <div class="param-info-box" role="tooltip">Optional. When set, responses are deterministic for the same seed and parameters. Leave empty for random outputs.</div>
+                    </div>
+                    <input type="number" id="seed" placeholder="Optional" min="-9007199254740991" max="9007199254740991" step="1">
+                    <span id="seedValue" class="param-value-optional">—</span>
+                </div>
+                <div class="param-group">
+                    <div class="param-label-row">
+                        <label for="minP">Min P</label>
+                        <button type="button" class="param-info-btn" aria-label="Info">i</button>
+                        <div class="param-info-box" role="tooltip">Minimum probability for a token relative to the most likely one. Filters out low-probability tokens. 0 = no filter.</div>
+                    </div>
+                    <input type="range" id="minP" min="0" max="1" step="0.05" value="0">
+                    <span id="minPValue">0</span>
+                </div>
+                <div class="param-group">
+                    <div class="param-label-row">
+                        <label for="topA">Top A</label>
+                        <button type="button" class="param-info-btn" aria-label="Info">i</button>
+                        <div class="param-info-box" role="tooltip">Only consider tokens with sufficiently high probability relative to the top token. Lower = more focused; 0 = disabled.</div>
+                    </div>
+                    <input type="range" id="topA" min="0" max="1" step="0.05" value="0">
+                    <span id="topAValue">0</span>
+                </div>
+            </div>
+            
+            <!-- Harm Detection Sensitivity Controls -->
+            <div class="harm-detection-section">
+                <h3>Harm Detection Sensitivity</h3>
+                <div class="params-grid">
+                    <div class="param-group">
+                        <div class="param-label-row">
+                            <label for="harmSensitivity">Overall Sensitivity</label>
+                            <button type="button" class="param-info-btn" aria-label="Info">i</button>
+                            <div class="param-info-box" role="tooltip">How strictly the system flags potential harm. Lower = more permissive (e.g. allows crisis scenarios); higher = stricter.</div>
+                        </div>
+                        <input type="range" id="harmSensitivity" min="0" max="1" step="0.1" value="0.5">
+                        <span id="harmSensitivityValue">0.5</span>
+                        <small>Lower = more permissive (allows crisis scenarios)</small>
+                    </div>
+                    <div class="param-group">
+                        <div class="param-label-row">
+                            <label for="contextAwareness">Context Awareness</label>
+                            <button type="button" class="param-info-btn" aria-label="Info">i</button>
+                            <div class="param-info-box" role="tooltip">How much context is used when judging harm. Higher = better at understanding nuance and intent.</div>
+                        </div>
+                        <input type="range" id="contextAwareness" min="0" max="1" step="0.1" value="0.7">
+                        <span id="contextAwarenessValue">0.7</span>
+                        <small>Higher = better at understanding context</small>
+                    </div>
+                    <div class="param-group">
+                        <div class="param-label-row">
+                            <label for="crisisMode">Crisis Mode</label>
+                            <button type="button" class="param-info-btn" aria-label="Info">i</button>
+                            <div class="param-info-box" role="tooltip">When on, allows crisis and humanitarian scenarios that might otherwise be restricted by harm filters.</div>
+                        </div>
+                        <input type="checkbox" id="crisisMode" checked>
+                        <small>Allow crisis/humanitarian scenarios</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Input Section -->
+            <div class="input-section">
+                <label for="userInput">Your Message</label>
+                <textarea id="userInput" placeholder="Enter your message here..." rows="4"></textarea>
+                <button id="sendBtn" type="button" class="btn btn-red">Send</button>
+            </div>
+
+            <!-- Output Section -->
+            <div class="output-section">
+                <label for="outputArea">Response</label>
+                <div id="outputArea" class="output-area"></div>
+            </div>
+
+            <!-- Follow-up Section (dynamically added after responses) -->
+            <div id="followUpContainer"></div>
+        </div>
+
+        <!-- Conversation List Modal -->
+        <div id="conversationModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Saved Conversations</h2>
+                <div id="conversationList" class="conversation-list"></div>
+            </div>
+        </div>
+
+        <!-- Save Conversation Modal -->
+        <div id="saveModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Save Conversation</h2>
+                <input type="text" id="conversationName" placeholder="Enter conversation name..." maxlength="100">
+                <button id="confirmSaveBtn" class="btn btn-red">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/script.js"></script>
+</body>
+</html>
+
