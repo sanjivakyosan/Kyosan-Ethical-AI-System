@@ -109,7 +109,7 @@ pip install -r requirements.txt
 
 You should see Flask, flask-cors, Werkzeug, and openai being installed. Wait until it finishes without errors.
 
-## 1.6 Step 5: Set Up Your API Key (Optional but Recommended)
+## 1.6 Step 5: Set Up Your API Key,
 
 The system uses OpenRouter to generate AI responses. For production or heavy use, use your own key:
 
@@ -135,7 +135,10 @@ export OPENROUTER_API_KEY="your-api-key-here"
 python app.py
 ```
 
-If you don’t set it, the app may use a built-in default key (suitable only for light testing).
+Why Sonar (Perplexity) fits this framework
+For this kind of system, the model behind the answers matters as much as the ethical pipeline around it. Perplexity’s Sonar is a strong fit. Sonar is built for real-time, web-grounded responses: it doesn’t rely only on fixed training data but can pull in current information when the situation demands it. In crisis and humanitarian work, that’s essential, contexts change fast, and decisions need to reflect what’s true now, not what was true months ago. Sonar also returns citations by default, so answers are traceable to sources. That supports the framework’s emphasis on accountability and dignity: you’re not just getting an answer, you’re getting something you can check and, when needed, justify. On factuality benchmarks, Sonar and Sonar Pro rank among the leading models, which matters when the stakes are high and errors can harm the most vulnerable. 
+Sonar gives you grounded, citable, up-to-date responses, exactly what the Kyosan framework is designed to wrap with clear ethical guardrails and a humanitarian lens.
+
 
 ## 1.7 Step 6: Run the Application
 
