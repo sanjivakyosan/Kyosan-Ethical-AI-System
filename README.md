@@ -85,6 +85,9 @@ http://localhost:5000
 - Conversations are saved as JSON files in the `conversations/` directory
 - The system integrates with your existing ethical processing framework
 - All responses go through ethical checks (harm detection, instruction validation, system integrity, wellbeing assessment) and optional ethical subsystems
+- Why Sonar (Perplexity) fits this framework
+For this kind of system, the model behind the answers matters as much as the ethical pipeline around it. Perplexity’s Sonar is a strong fit. Sonar is built for real-time, web-grounded responses: it doesn’t rely only on fixed training data but can pull in current information when the situation demands it. In crisis and humanitarian work, that’s essential, contexts change fast, and decisions need to reflect what’s true now, not what was true months ago. Sonar also returns citations by default, so answers are traceable to sources. That supports the framework’s emphasis on accountability and dignity: you’re not just getting an answer, you’re getting something you can check and, when needed, justify. On factuality benchmarks, Sonar and Sonar Pro rank among the leading models, which matters when the stakes are high and errors can harm the most vulnerable. 
+Sonar gives you grounded, citable, up-to-date responses, exactly what the Kyosan framework is designed to wrap with clear ethical guardrails and a humanitarian lens.
 
 ---
 
