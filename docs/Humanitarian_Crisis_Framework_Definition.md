@@ -1,6 +1,6 @@
 # Humanitarian Crisis Framework — Universal Ethical Blocks
 
-**Copyright © Sanjiva Kyosan** — Kyosan Ethical AI System
+**Copyright © Charles Roux* — Kyosan Ethical AI System
 
 ## Comprehensive Definition
 
