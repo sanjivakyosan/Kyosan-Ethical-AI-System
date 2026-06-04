@@ -3,7 +3,7 @@
 **Version:** 1.1  
 **Base URL:** `http://localhost:5000`  
 **Date:** February 2026  
-**Copyright © Sanjiva Kyosan**
+**Copyright © Charles Roux**
 
 ---
 
