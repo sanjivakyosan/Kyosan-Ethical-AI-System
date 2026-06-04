@@ -1,6 +1,6 @@
 # Kyosan Ethical AI System — User Guide
 
-**Copyright © Sanjiva Kyosan**
+**Copyright © Charles Roux**
 
 This guide covers core processing, every parameter in detail, and a step-by-step installation for beginners.
 
