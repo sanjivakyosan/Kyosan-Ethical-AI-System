@@ -1,4 +1,4 @@
-// Copyright © Sanjiva Kyosan — Kyosan Ethical AI System
+// Copyright © Charles Roux — Kyosan Ethical AI System
 // API Base URL
 const API_BASE = 'http://localhost:5000/api';
 
