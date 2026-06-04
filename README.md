@@ -91,5 +91,5 @@ Sonar gives you grounded, citable, up-to-date responses, exactly what the Kyos
 
 ---
 
-**Copyright © Sanjiva Kyosan**
+**Copyright © Charles Roux**
 
