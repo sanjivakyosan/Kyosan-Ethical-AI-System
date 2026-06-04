@@ -2,7 +2,7 @@
 
 **Version:** 1.0  
 **Date:** December 25, 2025  
-**Copyright © Sanjiva Kyosan**
+**Copyright © Charles Roux**
 
 ---
 
