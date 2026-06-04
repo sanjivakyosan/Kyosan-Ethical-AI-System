@@ -1,4 +1,4 @@
-# Copyright © Sanjiva Kyosan — Kyosan Ethical AI System
+# Copyright © Charles Roux — Kyosan Ethical AI System
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import json
