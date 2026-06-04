@@ -1,6 +1,6 @@
 # Kyosan Ethical AI System - Integration Status Report
 
-**Copyright © Sanjiva Kyosan**
+**Copyright © Charles Roux**
 
 ## ✅ FULLY INTEGRATED AND FUNCTIONAL
 
