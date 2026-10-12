@@ -363,7 +363,7 @@ function formatOptionalSystemsSummary(optionalSystems) {
 }
 
 function formatEthicalMetadataLine(metadata) {
-    const checks = metadata?.ethical_checks || metadata;
+    const checks = metadata?.ethical_checks || {};
     const harm = checks?.harm_detection?.has_harmful_intent ? 'Flagged' : 'Passed';
     const integrity = checks?.system_integrity?.is_safe === false ? 'Failed' : 'Passed';
     const wellbeing = checks?.wellbeing_assessment?.wellbeing_score;

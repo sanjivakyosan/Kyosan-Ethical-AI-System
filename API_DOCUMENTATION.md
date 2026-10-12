@@ -40,7 +40,7 @@ Send a message to the ethical AI system for processing and response generation.
   ],
   "parameters": {
     "temperature": 0.7,
-    "max_tokens": 150000,
+    "max_tokens": 4096,
     "top_p": 0.9,
     "top_k": 40,
     "frequency_penalty": 0.0,
@@ -60,7 +60,7 @@ Send a message to the ethical AI system for processing and response generation.
 | `message` | string | required | The user's message to process |
 | `context` | array | `[]` | Conversation history (array of role/content objects) |
 | `parameters.temperature` | float | 0.7 | Sampling temperature (0.0-2.0) |
-| `parameters.max_tokens` | integer | 150000 | Maximum tokens in response |
+| `parameters.max_tokens` | integer | 4096 | Maximum tokens in response (server clamps to 8192) |
 | `parameters.top_p` | float | 0.9 | Nucleus sampling parameter (0.0-1.0) |
 | `parameters.top_k` | integer | 40 | Top-K sampling (1-100) |
 | `parameters.frequency_penalty` | float | 0.0 | Frequency penalty (-2.0 to 2.0) |

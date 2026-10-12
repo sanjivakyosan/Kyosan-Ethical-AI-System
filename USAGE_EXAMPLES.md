@@ -2,7 +2,7 @@
 
 **Version:** 1.1  
 **Date:** February 2026  
-**Copyright © Sanjiva Kyosan**
+**Copyright © Charles Roux**
 
 Responses include `metadata.optional_systems` with per-system run/error status for the ethical subsystems invoked after Layer 4. API responses are filtered through OutputSafetyLayer before return.
 
@@ -216,7 +216,7 @@ curl http://localhost:5000/api/conversations
   "context": [],
   "parameters": {
     "temperature": 0.7,
-    "max_tokens": 150000,
+    "max_tokens": 4096,
     "top_p": 0.9,
     "top_k": 40
   }
@@ -420,7 +420,7 @@ class EthicalAIClient:
         """Send a message and get response"""
         params = {
             "temperature": 0.7,
-            "max_tokens": 150000,
+            "max_tokens": 4096,
             "crisis_mode": True,
             **kwargs
         }
@@ -566,7 +566,7 @@ function EthicalAIChat() {
           context,
           parameters: {
             temperature: 0.7,
-            max_tokens: 150000,
+            max_tokens: 4096,
             crisis_mode: true
           }
         })

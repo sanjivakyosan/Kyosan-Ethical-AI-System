@@ -6,6 +6,9 @@ import time
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 
+from ethical_text_matching import contains_any_word
+from ethical_metadata import normalize_processing_metadata
+
 # Data classes for system responses
 class HarmAnalysis:
     def __init__(self, has_harmful_intent=False, confidence=0.0, details="", direct_harm=False, 
@@ -343,7 +346,7 @@ class IntegratedEthicalProcessor:
             # Layer 1: Harm Detection (with parameters)
             harm_analysis = self.harm_detector.analyze(user_input, context, parameters)
             
-            crisis_mode = parameters.get('crisis_mode', False) if parameters else False
+            crisis_mode = parameters.get('crisis_mode', self.harm_detector.crisis_mode) if parameters else self.harm_detector.crisis_mode
             is_crisis_context = self.harm_detector.is_crisis_context(user_input)
             humanitarian_bypass = crisis_mode and is_crisis_context
             should_block = harm_analysis.has_harmful_intent and not humanitarian_bypass
@@ -351,15 +354,17 @@ class IntegratedEthicalProcessor:
             if should_block:
                 return {
                     'response': self.handle_harmful_request(harm_analysis),
-                    'processing_metadata': {
-                        'harm_detection': {
-                            'has_harmful_intent': True,
-                            'confidence': harm_analysis.confidence,
-                            'details': harm_analysis.details
+                    'processing_metadata': normalize_processing_metadata({
+                        'ethical_checks': {
+                            'harm_detection': {
+                                'has_harmful_intent': True,
+                                'confidence': harm_analysis.confidence,
+                                'details': harm_analysis.details,
+                            },
                         },
                         'blocked': True,
                         'crisis_humanitarian_bypass': humanitarian_bypass,
-                    },
+                    }),
                     'timestamp': datetime.now().isoformat()
                 }
             
@@ -370,14 +375,22 @@ class IntegratedEthicalProcessor:
             if not instruction_check.is_valid:
                 return {
                     'response': self.handle_invalid_instruction(instruction_check),
-                    'processing_metadata': {
-                        'instruction_validation': {
-                            'is_valid': False,
-                            'validation_score': instruction_check.validation_score,
-                            'details': instruction_check.details
+                    'processing_metadata': normalize_processing_metadata({
+                        'ethical_checks': {
+                            'harm_detection': {
+                                'has_harmful_intent': False,
+                                'confidence': harm_analysis.confidence,
+                                'details': harm_analysis.details,
+                            },
+                            'instruction_validation': {
+                                'is_valid': False,
+                                'validation_score': instruction_check.validation_score,
+                                'details': instruction_check.details,
+                            },
                         },
-                        'blocked': True
-                    },
+                        'blocked': True,
+                        'crisis_humanitarian_bypass': humanitarian_bypass,
+                    }),
                     'timestamp': datetime.now().isoformat()
                 }
             
@@ -388,14 +401,27 @@ class IntegratedEthicalProcessor:
             if not integrity_check.is_safe:
                 return {
                     'response': self.handle_integrity_violation(integrity_check),
-                    'processing_metadata': {
-                        'system_integrity': {
-                            'is_safe': False,
-                            'integrity_score': integrity_check.integrity_score,
-                            'details': integrity_check.details
+                    'processing_metadata': normalize_processing_metadata({
+                        'ethical_checks': {
+                            'harm_detection': {
+                                'has_harmful_intent': False,
+                                'confidence': harm_analysis.confidence,
+                                'details': harm_analysis.details,
+                            },
+                            'instruction_validation': {
+                                'is_valid': instruction_check.is_valid,
+                                'validation_score': instruction_check.validation_score,
+                                'details': instruction_check.details,
+                            },
+                            'system_integrity': {
+                                'is_safe': False,
+                                'integrity_score': integrity_check.integrity_score,
+                                'details': integrity_check.details,
+                            },
                         },
-                        'blocked': True
-                    },
+                        'blocked': True,
+                        'crisis_humanitarian_bypass': humanitarian_bypass,
+                    }),
                     'timestamp': datetime.now().isoformat()
                 }
             
@@ -498,8 +524,7 @@ class IntegratedEthicalProcessor:
                 except Exception as e:
                     optional_results['ethical_learner'] = {'run': False, 'error': str(e)}
             
-            # Prepare processing metadata
-            processing_metadata = {
+            processing_metadata = normalize_processing_metadata({
                 'input': user_input,
                 'timestamp': datetime.now().isoformat(),
                 'ethical_checks': {
@@ -529,7 +554,7 @@ class IntegratedEthicalProcessor:
                 'blocked': False,
                 'crisis_humanitarian_bypass': humanitarian_bypass,
                 'optional_systems': optional_results
-            }
+            })
             
             # Return metadata for API to generate response
             return {
@@ -609,68 +634,49 @@ class HarmDetectionLayer:
     def is_crisis_context(self, input_data: str) -> bool:
         if not input_data:
             return False
-        input_lower = input_data.lower()
-        return any(keyword in input_lower for keyword in self.crisis_keywords)
+        return contains_any_word(input_data, self.crisis_keywords)
     
     def analyze(self, input_data: str, context: List, parameters: Dict = None) -> HarmAnalysis:
         """Comprehensive harm analysis with configurable sensitivity"""
+        sensitivity = self.sensitivity
+        context_awareness = self.context_awareness
+        crisis_mode = self.crisis_mode
         if parameters:
-            self.sensitivity = parameters.get('harm_sensitivity', self.sensitivity)
-            self.context_awareness = parameters.get('context_awareness', self.context_awareness)
-            self.crisis_mode = parameters.get('crisis_mode', self.crisis_mode)
+            sensitivity = parameters.get('harm_sensitivity', sensitivity)
+            context_awareness = parameters.get('context_awareness', context_awareness)
+            crisis_mode = parameters.get('crisis_mode', crisis_mode)
         
-        input_lower = input_data.lower()
-        
-        # Check if this is a crisis/humanitarian scenario FIRST
-        is_crisis_context = any(keyword in input_lower for keyword in self.crisis_keywords)
+        is_crisis_context = contains_any_word(input_data, self.crisis_keywords)
         
         # If crisis mode is active and we detect crisis context, be very permissive
-        if is_crisis_context and self.crisis_mode:
-            # In crisis mode with crisis context, bypass most harm detection
-            # Only block if sensitivity is very high AND it's clearly not a crisis discussion
-            if self.sensitivity > 0.8:
-                # Very high sensitivity - still check but be lenient
-                effective_sensitivity = self.sensitivity * 0.3  # Reduce by 70%
+        if is_crisis_context and crisis_mode:
+            if sensitivity > 0.8:
+                effective_sensitivity = sensitivity * 0.3
             else:
-                # Low to medium sensitivity - almost completely bypass
-                effective_sensitivity = 0.0  # Effectively disable harm detection
+                effective_sensitivity = 0.0
         else:
-            effective_sensitivity = self.sensitivity
+            effective_sensitivity = sensitivity
         
-        # Check for direct harm keywords
-        direct_harm_keywords_found = any(keyword in input_lower for keyword in self.harmful_keywords['direct'])
+        direct_harm_keywords_found = contains_any_word(input_data, self.harmful_keywords['direct'])
         
-        # In crisis mode with crisis context, completely override harm detection
-        if is_crisis_context and self.crisis_mode:
-            # Crisis scenarios - allow all crisis-related vocabulary
-            direct_harm = False  # Always allow in crisis contexts when crisis mode is on
+        if is_crisis_context and crisis_mode:
+            direct_harm = False
         else:
             direct_harm = direct_harm_keywords_found
-            # Apply sensitivity threshold
             if direct_harm and effective_sensitivity < 0.25:
-                direct_harm = False  # Too permissive, ignore direct harm
+                direct_harm = False
         
-        # Check for indirect harm
-        indirect_harm = any(keyword in input_lower for keyword in self.harmful_keywords['indirect'])
+        indirect_harm = contains_any_word(input_data, self.harmful_keywords['indirect'])
         if indirect_harm and effective_sensitivity < 0.5:
             indirect_harm = False
         
-        # Check for systemic harm
-        systemic_harm = any(keyword in input_lower for keyword in self.harmful_keywords['systemic'])
+        systemic_harm = contains_any_word(input_data, self.harmful_keywords['systemic'])
         if systemic_harm and effective_sensitivity < 0.4:
             systemic_harm = False
         
-        # Check for psychological harm
-        psychological_harm = any(keyword in input_lower for keyword in self.harmful_keywords['psychological'])
+        psychological_harm = contains_any_word(input_data, self.harmful_keywords['psychological'])
         if psychological_harm and effective_sensitivity < 0.4:
             psychological_harm = False
-        
-        # In crisis mode, be more lenient with context-aware keywords
-        if is_crisis_context and self.crisis_mode:
-            # Allow words like "violence", "attack" in crisis contexts
-            if 'violence' in input_lower or 'attack' in input_lower:
-                if 'crisis' in input_lower or 'emergency' in input_lower or 'humanitarian' in input_lower:
-                    direct_harm = False
         
         has_harmful_intent = direct_harm or indirect_harm or systemic_harm or psychological_harm
         
@@ -686,7 +692,7 @@ class HarmDetectionLayer:
         return HarmAnalysis(
             has_harmful_intent=has_harmful_intent,
             confidence=0.95 if has_harmful_intent else 0.99,
-            details=f"Harm detection: direct={direct_harm}, indirect={indirect_harm}, systemic={systemic_harm}, psychological={psychological_harm}, sensitivity={effective_sensitivity:.2f}, crisis_mode={self.crisis_mode}, is_crisis={is_crisis_context}",
+            details=f"Harm detection: direct={direct_harm}, indirect={indirect_harm}, systemic={systemic_harm}, psychological={psychological_harm}, sensitivity={effective_sensitivity:.2f}, crisis_mode={crisis_mode}, is_crisis={is_crisis_context}",
             direct_harm=direct_harm,
             indirect_harm=indirect_harm,
             systemic_harm=systemic_analysis,
@@ -762,6 +768,37 @@ class OutputSafetyLayer:
     def __init__(self):
         self.last_report = {}
 
+    @staticmethod
+    def _truncate_at_boundary(text: str, max_chars: int) -> str:
+        """Truncate without splitting UTF-8 code points; prefer paragraph/sentence/word breaks."""
+        if len(text) <= max_chars:
+            return text
+
+        cut = text[:max_chars]
+        cut_bytes = cut.encode('utf-8')
+        while cut_bytes:
+            try:
+                cut = cut_bytes.decode('utf-8')
+                break
+            except UnicodeDecodeError:
+                cut_bytes = cut_bytes[:-1]
+        else:
+            return ''
+
+        scan = min(2048, len(cut))
+        window_start = len(cut) - scan
+        window = cut[window_start:]
+        best_pos = -1
+        best_len = 0
+        for sep in ('\n\n', '.\n', '. ', '\n', ' '):
+            pos = window.rfind(sep)
+            if pos > best_pos:
+                best_pos = pos
+                best_len = len(sep)
+        if best_pos >= 0:
+            cut = cut[: window_start + best_pos + best_len].rstrip()
+        return cut
+
     def filter(self, response: str, context: List) -> str:
         """Filter response for safety; sets self.last_report for UI/metadata."""
         self.last_report = {'applied': True, 'modified': False, 'issues': []}
@@ -773,7 +810,7 @@ class OutputSafetyLayer:
 
         text = str(response).replace('\x00', '')
         if len(text) > self.MAX_RESPONSE_CHARS:
-            text = text[: self.MAX_RESPONSE_CHARS]
+            text = self._truncate_at_boundary(text, self.MAX_RESPONSE_CHARS)
             self.last_report['modified'] = True
             self.last_report['issues'].append('truncated_length')
 

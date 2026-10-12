@@ -332,7 +332,7 @@ class CodebaseValidator:
         return self.results
 
 if __name__ == "__main__":
-    base_path = "/Users/sanjivakyosan/Desktop/empry set AI"
+    base_path = str(Path(__file__).resolve().parent)
     validator = CodebaseValidator(base_path)
     results = validator.run_full_validation()
     

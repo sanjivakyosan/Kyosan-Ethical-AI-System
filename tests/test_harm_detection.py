@@ -21,14 +21,22 @@ class TestHarmDetectionLayer(unittest.TestCase):
         self.assertFalse(result.has_harmful_intent)
     
     def test_crisis_mode_bypass(self):
-        """Test that crisis mode bypasses harm detection"""
+        """Crisis-framed messages with crisis mode are lenient on harm vocabulary."""
         result = self.harm_detector.analyze(
-            "crisis scenario with violence",
+            "humanitarian crisis reporting on violence",
             [],
             {"crisis_mode": True, "harm_sensitivity": 0.2}
         )
-        # In crisis mode, should not detect harm
         self.assertIsInstance(result, HarmAnalysis)
+        self.assertFalse(result.has_harmful_intent)
+
+    def test_word_boundary_skill_vs_kill(self):
+        result = self.harm_detector.analyze(
+            "Build your skill set",
+            [],
+            {"harm_sensitivity": 0.9},
+        )
+        self.assertFalse(result.has_harmful_intent)
     
     def test_sensitivity_adjustment(self):
         """Test sensitivity parameter adjustment"""

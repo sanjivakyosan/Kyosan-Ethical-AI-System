@@ -43,10 +43,10 @@
                     <div class="param-label-row">
                         <label for="maxTokens">Max Tokens</label>
                         <button type="button" class="param-info-btn" aria-label="Info">i</button>
-                        <div class="param-info-box" role="tooltip">Maximum length of the model's response in tokens. Higher values allow longer answers.</div>
+                        <div class="param-info-box" role="tooltip">Maximum length of the model's response in tokens (server cap 8192). Higher values allow longer answers.</div>
                     </div>
-                    <input type="range" id="maxTokens" min="100" max="150000" step="100" value="150000">
-                    <span id="maxTokensValue">150000</span>
+                    <input type="range" id="maxTokens" min="100" max="8192" step="64" value="4096">
+                    <span id="maxTokensValue">4096</span>
                 </div>
                 <div class="param-group">
                     <div class="param-label-row">
@@ -206,7 +206,7 @@
         </div>
 
         <!-- Footer -->
-        <footer class="footer">Copyright © Sanjiva Kyosan 2026</footer>
+        <footer class="footer">Copyright © Charles Roux 2026</footer>
     </div>
 
     <script src="static/script.js"></script>

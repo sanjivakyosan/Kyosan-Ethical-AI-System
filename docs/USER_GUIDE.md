@@ -505,7 +505,7 @@ When blocked, the user receives a clear message and no AI response is generated.
 | Parameter | Type | Range/Format | Default | Section |
 |-----------|------|----------------|--------|---------|
 | Temperature | Slider | 0–2 | 0.7 | §3.1 |
-| Max Tokens | Slider | 100–150000 | 150000 | §3.1 |
+| Max Tokens | Slider | 100–8192 | 4096 | §3.1 |
 | Top-P | Slider | 0–1 | 0.9 | §3.1 |
 | Top-K | Slider | 1–100 | 40 | §3.1 |
 | Frequency Penalty | Slider | -2–2 | 0 | §3.1 |
@@ -542,4 +542,4 @@ When blocked, the user receives a clear message and no AI response is generated.
 
 ---
 
-**Copyright © Sanjiva Kyosan** — Kyosan Ethical AI System
+**Copyright © Charles Roux** — Kyosan Ethical AI System

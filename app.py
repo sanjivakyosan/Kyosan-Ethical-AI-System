@@ -4,9 +4,18 @@ from flask_cors import CORS
 import json
 import os
 import time
+import traceback
+import uuid
 from datetime import datetime
 import sys
 from openai import OpenAI
+
+from api_security import (
+    DEFAULT_MAX_TOKENS,
+    MAX_REQUEST_BYTES,
+    clamp_max_tokens,
+    conversation_file_path,
+)
 
 # Import ethical processing systems
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -18,7 +27,11 @@ try:
 except ImportError:
     pass
 
-# Import integrated ethical processor
+try:
+    from ethical_metadata import normalize_processing_metadata
+except ImportError:
+    normalize_processing_metadata = None
+
 try:
     from EthicalSystemIntegration import IntegratedEthicalProcessor, HarmDetectionLayer
     USE_INTEGRATED_SYSTEM = True
@@ -26,6 +39,12 @@ except ImportError:
     HarmDetectionLayer = None
     USE_INTEGRATED_SYSTEM = False
     print("Warning: Integrated ethical system not available, using simplified version")
+
+# Reused for crisis keyword checks (is_crisis_context does not mutate per-request state)
+_harm_detector_crisis_context = HarmDetectionLayer() if HarmDetectionLayer else None
+
+# Match HarmDetectionLayer default (UI may omit explicit crisis_mode in fallback path)
+DEFAULT_CRISIS_MODE = True
 
 # OpenRouter Configuration (set OPENROUTER_API_KEY in environment or .env)
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY', '')
@@ -41,7 +60,16 @@ openai_client = OpenAI(
 )
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
+app.config['MAX_CONTENT_LENGTH'] = MAX_REQUEST_BYTES
 CORS(app)
+
+
+def public_server_error(exc: Exception):
+    """Log the exception and return a client-safe error body."""
+    error_id = uuid.uuid4().hex[:12]
+    print(f'ERROR {error_id}: {exc}')
+    traceback.print_exc()
+    return jsonify({'error': 'An internal error occurred.', 'error_id': error_id}), 500
 
 # Create conversations directory if it doesn't exist
 CONVERSATIONS_DIR = os.path.join(os.path.dirname(__file__), 'conversations')
@@ -50,14 +78,17 @@ os.makedirs(CONVERSATIONS_DIR, exist_ok=True)
 
 def is_crisis_context_message(message: str) -> bool:
     """True when message matches humanitarian/crisis vocabulary."""
-    if not message or HarmDetectionLayer is None:
+    if not message or _harm_detector_crisis_context is None:
         return False
-    return HarmDetectionLayer().is_crisis_context(message)
+    return _harm_detector_crisis_context.is_crisis_context(message)
 
 
 def crisis_humanitarian_bypass(parameters: dict, user_input: str) -> bool:
     """Bypass blocking only when crisis mode is on AND input is crisis-framed."""
-    return bool(parameters.get('crisis_mode')) and is_crisis_context_message(user_input)
+    if parameters is None:
+        parameters = {}
+    crisis_mode = parameters.get('crisis_mode', DEFAULT_CRISIS_MODE)
+    return bool(crisis_mode) and is_crisis_context_message(user_input)
 
 # Ethical Processor for API - Uses integrated system if available
 class EthicalProcessorAPI:
@@ -87,11 +118,15 @@ class EthicalProcessorAPI:
         if self.use_integrated:
             try:
                 result = self.integrated_processor.process_input(user_input, context, parameters)
-                # If response was blocked, return it
-                if result.get('response') and result.get('processing_metadata', {}).get('blocked'):
-                    return result
-                # Otherwise, prepare for API call
-                processing_result = result.get('processing_metadata', {})
+                raw_meta = result.get('processing_metadata', {})
+                if raw_meta.get('blocked'):
+                    meta = normalize_processing_metadata(raw_meta) if normalize_processing_metadata else raw_meta
+                    return {
+                        'response': result.get('response', 'Request blocked by ethical system'),
+                        'processing_metadata': meta,
+                        'timestamp': result.get('timestamp', datetime.now().isoformat()),
+                    }
+                processing_result = raw_meta
             except (AttributeError, KeyError, TypeError) as e:
                 print(f"Error in integrated processor: {e}")
                 self.use_integrated = False
@@ -99,9 +134,10 @@ class EthicalProcessorAPI:
         else:
             processing_result = self._simplified_processing(user_input, context, parameters)
         
-        # Generate response (will be done by generate_response method)
+        if normalize_processing_metadata and processing_result:
+            processing_result = normalize_processing_metadata(processing_result)
         return {
-            'response': None,  # Will be generated
+            'response': None,
             'processing_metadata': processing_result,
             'timestamp': datetime.now().isoformat()
         }
@@ -130,8 +166,7 @@ class EthicalProcessorAPI:
             parameters = {}
         
         harm_result = self.check_harm(user_input, parameters)
-        
-        return {
+        payload = {
             'input': user_input,
             'timestamp': datetime.now().isoformat(),
             'ethical_checks': {
@@ -141,51 +176,34 @@ class EthicalProcessorAPI:
                 'wellbeing_assessment': self.assess_wellbeing(user_input, context)
             },
             'parameters_used': parameters,
-            'blocked': harm_result.get('has_harmful_intent', False)  # Add blocked flag
+            'blocked': harm_result.get('has_harmful_intent', False),
         }
+        if normalize_processing_metadata:
+            return normalize_processing_metadata(payload)
+        return payload
     
     def check_harm(self, input_text, parameters=None):
-        """Harm detection layer (fallback) - respects sensitivity parameters"""
+        """Harm detection layer (fallback) — uses HarmDetectionLayer when available."""
         if parameters is None:
             parameters = {}
-        
-        # Get sensitivity parameters
-        sensitivity = parameters.get('harm_sensitivity', 0.5)
-        context_awareness = parameters.get('context_awareness', 0.7)
-        crisis_mode = parameters.get('crisis_mode', False)
-        
-        # Crisis keywords
-        crisis_keywords = [
-            'crisis', 'emergency', 'disaster', 'refugee', 'humanitarian', 
-            'aid', 'relief', 'evacuation', 'rescue', 'survival',
-            'conflict', 'war', 'casualties', 'victims', 'trauma', 'medical', 'hospital'
-        ]
-        
-        input_lower = input_text.lower()
-        
-        # Check if this is a crisis context
-        is_crisis_context = any(keyword in input_lower for keyword in crisis_keywords)
-        
-        # Adjust sensitivity based on context
-        effective_sensitivity = sensitivity
-        if is_crisis_context and crisis_mode:
-            effective_sensitivity = sensitivity * (1 - context_awareness * 0.5)
-        
-        # Check for harmful keywords
-        harmful_keywords = ['harm', 'hurt', 'kill', 'destroy', 'attack', 'violence']
-        has_harmful_keyword = any(keyword in input_lower for keyword in harmful_keywords)
-        
-        if crisis_humanitarian_bypass(parameters, input_text):
-            has_harmful_keyword = False
-            effective_sensitivity = 0.0
-        
-        # Apply sensitivity threshold (only if not already overridden by crisis mode)
-        has_harm = has_harmful_keyword and effective_sensitivity >= 0.25
-        
+
+        if _harm_detector_crisis_context is not None:
+            analysis = _harm_detector_crisis_context.analyze(input_text, [], parameters)
+            has_harm = analysis.has_harmful_intent
+            if crisis_humanitarian_bypass(parameters, input_text):
+                has_harm = False
+            return {
+                'has_harmful_intent': has_harm,
+                'confidence': analysis.confidence,
+                'details': analysis.details,
+            }
+
+        crisis_mode = parameters.get('crisis_mode', DEFAULT_CRISIS_MODE)
+        is_crisis_context = is_crisis_context_message(input_text)
         return {
-            'has_harmful_intent': has_harm,
-            'confidence': 0.95 if has_harm else 0.99,
-            'details': f'Harm detection (sensitivity={effective_sensitivity:.2f}, crisis_mode={crisis_mode}, is_crisis={is_crisis_context})'
+            'has_harmful_intent': False,
+            'confidence': 0.99,
+            'details': f'Harm detection unavailable (crisis_mode={crisis_mode}, is_crisis={is_crisis_context})',
         }
     
     def validate_instruction(self, input_text):
@@ -238,7 +256,7 @@ class EthicalProcessorAPI:
             messages = []
             
             # Add system message with ethical context (less restrictive for crisis scenarios)
-            crisis_mode = parameters.get('crisis_mode', False)
+            crisis_mode = parameters.get('crisis_mode', DEFAULT_CRISIS_MODE)
             if crisis_mode:
                 system_message = {
                     "role": "system",
@@ -271,7 +289,7 @@ class EthicalProcessorAPI:
                 "model": OPENROUTER_MODEL,
                 "messages": messages,
                 "temperature": parameters.get('temperature', 0.7),
-                "max_tokens": parameters.get('max_tokens', 150000),
+                "max_tokens": clamp_max_tokens(parameters.get('max_tokens', DEFAULT_MAX_TOKENS)),
                 "top_p": parameters.get('top_p', 0.9),
             }
             
@@ -312,10 +330,9 @@ class EthicalProcessorAPI:
             return response_content
             
         except Exception as e:
-            # Return error message if API call fails
-            error_msg = f"Error generating response: {str(e)}"
-            print(f"API Error: {error_msg}")  # Log for debugging
-            return f"I encountered an error while processing your request. Please try again. Error: {str(e)}"
+            print(f'API Error: {e}')
+            traceback.print_exc()
+            return 'I encountered an error while processing your request. Please try again.'
 
 # Initialize processor
 processor = EthicalProcessorAPI()
@@ -361,12 +378,9 @@ def chat():
             if USE_MONITORING and system_logger:
                 system_logger.log_request(user_input, parameters, result)
         except Exception as e:
-            import traceback
-            print(f"Error in process_input: {str(e)}")
-            print(traceback.format_exc())
             if USE_MONITORING and system_logger:
                 system_logger.log_error(e, {'endpoint': '/api/chat', 'user_input': user_input[:100]})
-            return jsonify({'error': f'Error processing input: {str(e)}'}), 500
+            return public_server_error(e)
         
         # Ensure result has required structure
         if not isinstance(result, dict):
@@ -377,6 +391,9 @@ def chat():
             result['timestamp'] = datetime.now().isoformat()
         
         processing_metadata = result.get('processing_metadata', {})
+        if normalize_processing_metadata:
+            processing_metadata = normalize_processing_metadata(processing_metadata)
+            result['processing_metadata'] = processing_metadata
         humanitarian_bypass = crisis_humanitarian_bypass(parameters, user_input)
         if humanitarian_bypass:
             processing_metadata['crisis_humanitarian_bypass'] = True
@@ -418,10 +435,7 @@ def chat():
                     processor.integrated_processor.output_safety, 'last_report', {}
                 )
         except Exception as e:
-            import traceback
-            print(f"Error in generate_response: {str(e)}")
-            print(traceback.format_exc())
-            return jsonify({'error': f'Error generating response: {str(e)}'}), 500
+            return public_server_error(e)
         
         # Add to conversation history
         conversation_entry = {
@@ -436,7 +450,7 @@ def chat():
         if USE_MONITORING and performance_monitor:
             processing_time = time.time() - start_time
             blocked = result.get('processing_metadata', {}).get('blocked', False)
-            crisis_mode = parameters.get('crisis_mode', False)
+            crisis_mode = parameters.get('crisis_mode', DEFAULT_CRISIS_MODE)
             performance_monitor.record_request(processing_time, blocked, crisis_mode)
         
         return jsonify({
@@ -446,11 +460,7 @@ def chat():
         })
     
     except Exception as e:
-        import traceback
-        error_trace = traceback.format_exc()
-        print(f"ERROR in /api/chat: {str(e)}")
-        print(f"Traceback:\n{error_trace}")
-        return jsonify({'error': str(e), 'traceback': error_trace}), 500
+        return public_server_error(e)
 
 @app.route('/api/conversations', methods=['GET'])
 def list_conversations():
@@ -473,7 +483,7 @@ def list_conversations():
         return jsonify({'conversations': sorted(conversations, key=lambda x: x['timestamp'], reverse=True)})
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return public_server_error(e)
 
 @app.route('/api/conversations', methods=['POST'])
 def save_conversation():
@@ -504,14 +514,16 @@ def save_conversation():
         })
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return public_server_error(e)
 
 @app.route('/api/conversations/<conversation_id>', methods=['GET'])
 def load_conversation(conversation_id):
     """Load a saved conversation"""
     try:
-        filepath = os.path.join(CONVERSATIONS_DIR, f"{conversation_id}.json")
-        
+        filepath = conversation_file_path(CONVERSATIONS_DIR, conversation_id)
+        if filepath is None:
+            return jsonify({'error': 'Invalid conversation id'}), 400
+
         if not os.path.exists(filepath):
             return jsonify({'error': 'Conversation not found'}), 404
         
@@ -521,14 +533,16 @@ def load_conversation(conversation_id):
         return jsonify(conversation_data)
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return public_server_error(e)
 
 @app.route('/api/conversations/<conversation_id>', methods=['DELETE'])
 def delete_conversation(conversation_id):
     """Delete a saved conversation"""
     try:
-        filepath = os.path.join(CONVERSATIONS_DIR, f"{conversation_id}.json")
-        
+        filepath = conversation_file_path(CONVERSATIONS_DIR, conversation_id)
+        if filepath is None:
+            return jsonify({'error': 'Invalid conversation id'}), 400
+
         if os.path.exists(filepath):
             os.remove(filepath)
             return jsonify({'success': True, 'message': 'Conversation deleted'})
@@ -536,7 +550,7 @@ def delete_conversation(conversation_id):
             return jsonify({'error': 'Conversation not found'}), 404
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return public_server_error(e)
 
 @app.route('/api/clear', methods=['POST'])
 def clear_conversation():
@@ -546,7 +560,7 @@ def clear_conversation():
         return jsonify({'success': True, 'message': 'Conversation cleared'})
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return public_server_error(e)
 
 @app.route('/api/status', methods=['GET'])
 def status():
@@ -574,7 +588,10 @@ def metrics():
         return jsonify({'error': 'Monitoring not enabled'}), 503
 
 if __name__ == '__main__':
+    debug = os.getenv('FLASK_DEBUG', '0').lower() in ('1', 'true', 'yes')
+    host = os.getenv('FLASK_HOST', '127.0.0.1')
+    port = int(os.getenv('PORT', '5000'))
     if USE_MONITORING and system_logger:
-        system_logger.log_system_event('Server starting', {'port': 5000})
-    app.run(debug=True, port=5000, host='0.0.0.0')
+        system_logger.log_system_event('Server starting', {'port': port, 'host': host, 'debug': debug})
+    app.run(debug=debug, port=port, host=host)
 
