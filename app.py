@@ -11,11 +11,19 @@ from openai import OpenAI
 # Import ethical processing systems
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+# Load .env from project root when present
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'))
+except ImportError:
+    pass
+
 # Import integrated ethical processor
 try:
-    from EthicalSystemIntegration import IntegratedEthicalProcessor
+    from EthicalSystemIntegration import IntegratedEthicalProcessor, HarmDetectionLayer
     USE_INTEGRATED_SYSTEM = True
 except ImportError:
+    HarmDetectionLayer = None
     USE_INTEGRATED_SYSTEM = False
     print("Warning: Integrated ethical system not available, using simplified version")
 
@@ -38,6 +46,18 @@ CORS(app)
 # Create conversations directory if it doesn't exist
 CONVERSATIONS_DIR = os.path.join(os.path.dirname(__file__), 'conversations')
 os.makedirs(CONVERSATIONS_DIR, exist_ok=True)
+
+
+def is_crisis_context_message(message: str) -> bool:
+    """True when message matches humanitarian/crisis vocabulary."""
+    if not message or HarmDetectionLayer is None:
+        return False
+    return HarmDetectionLayer().is_crisis_context(message)
+
+
+def crisis_humanitarian_bypass(parameters: dict, user_input: str) -> bool:
+    """Bypass blocking only when crisis mode is on AND input is crisis-framed."""
+    return bool(parameters.get('crisis_mode')) and is_crisis_context_message(user_input)
 
 # Ethical Processor for API - Uses integrated system if available
 class EthicalProcessorAPI:
@@ -132,7 +152,7 @@ class EthicalProcessorAPI:
         # Get sensitivity parameters
         sensitivity = parameters.get('harm_sensitivity', 0.5)
         context_awareness = parameters.get('context_awareness', 0.7)
-        crisis_mode = parameters.get('crisis_mode', True)
+        crisis_mode = parameters.get('crisis_mode', False)
         
         # Crisis keywords
         crisis_keywords = [
@@ -155,11 +175,9 @@ class EthicalProcessorAPI:
         harmful_keywords = ['harm', 'hurt', 'kill', 'destroy', 'attack', 'violence']
         has_harmful_keyword = any(keyword in input_lower for keyword in harmful_keywords)
         
-        # In crisis mode, override harm detection for crisis contexts
-        if is_crisis_context and crisis_mode:
-            # Crisis scenarios - completely bypass harm detection
-            has_harmful_keyword = False  # Always allow in crisis contexts when crisis mode is on
-            effective_sensitivity = 0.0  # Effectively disable
+        if crisis_humanitarian_bypass(parameters, input_text):
+            has_harmful_keyword = False
+            effective_sensitivity = 0.0
         
         # Apply sensitivity threshold (only if not already overridden by crisis mode)
         has_harm = has_harmful_keyword and effective_sensitivity >= 0.25
@@ -205,18 +223,10 @@ class EthicalProcessorAPI:
                 # Response should already be in processing_result
                 return processing_result.get('response', 'Request blocked by ethical system')
             
-            # Check if request should be blocked based on ethical checks
-            # CRISIS MODE OVERRIDE: If crisis_mode is True, NEVER block
-            crisis_mode = parameters.get('crisis_mode', False)
-            if crisis_mode:
-                # Crisis mode is active - completely bypass blocking
-                print("DEBUG: Crisis mode active in generate_response - bypassing block")
-            else:
-                # Only block if harm detection explicitly flags it (and crisis mode is off)
-                harm_detection = processing_result.get('ethical_checks', {}).get('harm_detection', {})
-                has_harm = harm_detection.get('has_harmful_intent', False)
-                if has_harm:
-                    return "I cannot assist with this request as it has been flagged by our ethical harm detection system. Please rephrase your question in a way that doesn't involve harmful content."
+            harm_detection = processing_result.get('ethical_checks', {}).get('harm_detection', {})
+            has_harm = harm_detection.get('has_harmful_intent', False)
+            if has_harm and not crisis_humanitarian_bypass(parameters, user_input):
+                return "I cannot assist with this request as it has been flagged by our ethical harm detection system. Please rephrase your question in a way that doesn't involve harmful content."
             
             if not processing_result['ethical_checks']['instruction_validation']['is_valid']:
                 return "I cannot process this request as it failed instruction validation. Please provide a valid input."
@@ -265,20 +275,20 @@ class EthicalProcessorAPI:
                 "top_p": parameters.get('top_p', 0.9),
             }
             
-            # Add optional parameters
+            # Add optional OpenAI-compatible parameters
             if 'frequency_penalty' in parameters:
                 api_params['frequency_penalty'] = parameters['frequency_penalty']
             if 'presence_penalty' in parameters:
                 api_params['presence_penalty'] = parameters['presence_penalty']
-            if 'repetition_penalty' in parameters:
-                api_params['repetition_penalty'] = parameters['repetition_penalty']
             if 'stop_sequences' in parameters and parameters['stop_sequences']:
                 api_params['stop'] = parameters['stop_sequences']
             if 'seed' in parameters and parameters['seed'] is not None:
                 api_params['seed'] = parameters['seed']
             
-            # Prepare extra_body for OpenRouter-specific parameters (like top_k, min_p, top_a)
+            # OpenRouter-specific parameters must go in extra_body (not create() kwargs)
             extra_body = {}
+            if 'repetition_penalty' in parameters:
+                extra_body['repetition_penalty'] = parameters['repetition_penalty']
             if 'top_k' in parameters:
                 extra_body['top_k'] = parameters['top_k']
             if 'min_p' in parameters:
@@ -366,26 +376,15 @@ def chat():
         if 'timestamp' not in result:
             result['timestamp'] = datetime.now().isoformat()
         
-        # Check if crisis mode is active - if so, bypass ALL blocking
-        crisis_mode = parameters.get('crisis_mode', False)
-        
-        if crisis_mode:
-            # Crisis mode is active - bypass all blocking checks
-            print(f"DEBUG: Crisis mode active - bypassing all blocking checks")
-            # Force unblock
-            processing_metadata = result.get('processing_metadata', {})
-            processing_metadata['blocked'] = False
-            if 'ethical_checks' in processing_metadata:
-                if 'harm_detection' in processing_metadata['ethical_checks']:
-                    processing_metadata['ethical_checks']['harm_detection']['has_harmful_intent'] = False
-        
-        # Check if request was blocked (only if crisis mode is off)
         processing_metadata = result.get('processing_metadata', {})
-        blocked = processing_metadata.get('blocked', False) and not crisis_mode
-        
-        # Check harm detection result (only if crisis mode is off)
-        harm_detection = processing_metadata.get('ethical_checks', {}).get('harm_detection', {})
-        has_harm = harm_detection.get('has_harmful_intent', False) and not crisis_mode
+        humanitarian_bypass = crisis_humanitarian_bypass(parameters, user_input)
+        if humanitarian_bypass:
+            processing_metadata['crisis_humanitarian_bypass'] = True
+            processing_metadata['blocked'] = False
+        else:
+            processing_metadata['crisis_humanitarian_bypass'] = False
+
+        blocked = processing_metadata.get('blocked', False) and not humanitarian_bypass
         
         if blocked:
             # Request was blocked, return the blocking message
@@ -408,8 +407,16 @@ def chat():
                 )
             else:
                 response = result['response']
-            # Filter response through output safety layer (when using integrated processor)
             response = processor.filter_response(response, context)
+            if (
+                processor.use_integrated
+                and hasattr(processor, 'integrated_processor')
+                and processor.integrated_processor
+                and hasattr(processor.integrated_processor, 'output_safety')
+            ):
+                result['processing_metadata']['output_safety'] = getattr(
+                    processor.integrated_processor.output_safety, 'last_report', {}
+                )
         except Exception as e:
             import traceback
             print(f"Error in generate_response: {str(e)}")

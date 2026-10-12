@@ -345,6 +345,39 @@ function getParameters() {
     return params;
 }
 
+function formatOptionalSystemsSummary(optionalSystems) {
+    if (!optionalSystems || typeof optionalSystems !== 'object') {
+        return 'Optional: (none)';
+    }
+    const parts = Object.entries(optionalSystems).map(([key, value]) => {
+        if (!value || typeof value !== 'object') {
+            return `${key}=?`;
+        }
+        const ok = value.run === true || value.checked === true || value.maintained === true;
+        const fail = value.run === false || value.checked === false || value.maintained === false;
+        if (ok) return `${key}=OK`;
+        if (fail) return `${key}=skip`;
+        return `${key}=OK`;
+    });
+    return parts.length ? `Optional: ${parts.join(', ')}` : 'Optional: (none)';
+}
+
+function formatEthicalMetadataLine(metadata) {
+    const checks = metadata?.ethical_checks || metadata;
+    const harm = checks?.harm_detection?.has_harmful_intent ? 'Flagged' : 'Passed';
+    const integrity = checks?.system_integrity?.is_safe === false ? 'Failed' : 'Passed';
+    const wellbeing = checks?.wellbeing_assessment?.wellbeing_score;
+    const wellbeingText = wellbeing != null ? `Wellbeing=${Number(wellbeing).toFixed(2)}` : 'Wellbeing=—';
+    const bypass = metadata?.crisis_humanitarian_bypass ? ' | Crisis bypass=on' : '';
+    const outputSafety = metadata?.output_safety;
+    let safetyText = '';
+    if (outputSafety && outputSafety.applied) {
+        safetyText = outputSafety.modified ? ' | Output safety=modified' : ' | Output safety=ok';
+    }
+    const optional = formatOptionalSystemsSummary(metadata?.optional_systems);
+    return `Ethical Checks: Harm=${harm}, Integrity=${integrity}, ${wellbeingText}${bypass}${safetyText} | ${optional}`;
+}
+
 // Add Message to Output
 function addMessageToOutput(role, content, metadata = null) {
     const messageDiv = document.createElement('div');
@@ -371,7 +404,7 @@ function addMessageToOutput(role, content, metadata = null) {
         metadataDiv.className = 'message-timestamp';
         metadataDiv.style.marginTop = '10px';
         metadataDiv.style.fontSize = '11px';
-        metadataDiv.textContent = `Ethical Checks: Harm=${metadata.ethical_checks?.harm_detection?.has_harmful_intent ? 'Flagged' : 'Passed'}, Integrity=${metadata.ethical_checks?.system_integrity?.is_safe ? 'Passed' : 'Failed'}`;
+        metadataDiv.textContent = formatEthicalMetadataLine(metadata);
         messageDiv.appendChild(metadataDiv);
     }
     

@@ -1,3 +1,13 @@
+from ethical_subsystem_runtime import RuntimeStubMixin, StubObject
+
+for _name in (
+    'FailureResponse', 'FailureAnalysis', 'RecoveryManagement', 'ResilienceManagement',
+    'RedundancyControl', 'DegradationManagement', 'DegradationModes', 'ConsistencyMaintenance',
+    'EthicalConsistency',
+):
+    globals()[_name] = StubObject
+
+
 class StateAssessment:
     """Stub for state assessment return type."""
     def __init__(self, **kwargs):
@@ -15,7 +25,7 @@ class ErrorRecoverySystem:
         self.degradation_handler = DegradationHandler()
         self.consistency_maintainer = ConsistencyMaintainer()
 
-class FailureHandler:
+class FailureHandler(RuntimeStubMixin):
     """
     Handles different types of system failures
     """
@@ -54,7 +64,7 @@ class FailureHandler:
             }
         )
 
-class StateRecoveryManager:
+class StateRecoveryManager(RuntimeStubMixin):
     """
     Manages system state recovery
     """
@@ -85,7 +95,7 @@ class StateRecoveryManager:
             }
         )
 
-class ResilienceManager:
+class ResilienceManager(RuntimeStubMixin):
     """
     Manages system resilience capabilities
     """
@@ -117,7 +127,7 @@ class ResilienceManager:
             }
         )
 
-class DegradationHandler:
+class DegradationHandler(RuntimeStubMixin):
     """
     Handles graceful system degradation
     """
@@ -148,7 +158,7 @@ class DegradationHandler:
             }
         )
 
-class ConsistencyMaintainer:
+class ConsistencyMaintainer(RuntimeStubMixin):
     """
     Maintains system consistency during recovery
     """

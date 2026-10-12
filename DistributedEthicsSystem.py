@@ -1,3 +1,13 @@
+from ethical_subsystem_runtime import RuntimeStubMixin, StubObject
+
+for _name in (
+    'ConsensusManagement', 'EthicalConsensus', 'StateSynchronization', 'StateManagement',
+    'DistributionCoordination', 'WorkloadDistribution', 'IntegrityMaintenance', 'LoadBalancing',
+    'LoadDistribution',
+):
+    globals()[_name] = StubObject
+
+
 class GlobalConsistency:
     """Stub for global consistency return type."""
     def __init__(self, **kwargs):
@@ -15,7 +25,7 @@ class DistributedEthicsSystem:
         self.integrity_maintainer = IntegrityMaintainer()
         self.load_balancer = LoadBalancer()
 
-class ConsensusManager:
+class ConsensusManager(RuntimeStubMixin):
     """
     Manages ethical consensus across distributed nodes
     """
@@ -52,7 +62,7 @@ class ConsensusManager:
             }
         )
 
-class StateSynchronizer:
+class StateSynchronizer(RuntimeStubMixin):
     """
     Maintains synchronized ethical state across nodes
     """
@@ -88,7 +98,7 @@ class StateSynchronizer:
             }
         )
 
-class DistributionCoordinator:
+class DistributionCoordinator(RuntimeStubMixin):
     """
     Coordinates ethical processing across distributed components
     """
@@ -119,7 +129,7 @@ class DistributionCoordinator:
             }
         )
 
-class IntegrityMaintainer:
+class IntegrityMaintainer(RuntimeStubMixin):
     """
     Maintains ethical integrity across distributed system
     """
@@ -150,7 +160,7 @@ class IntegrityMaintainer:
             }
         )
 
-class LoadBalancer:
+class LoadBalancer(RuntimeStubMixin):
     """
     Manages ethical processing load across nodes
     """

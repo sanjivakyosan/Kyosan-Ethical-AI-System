@@ -1,3 +1,12 @@
+from ethical_subsystem_runtime import RuntimeStubMixin, StubObject
+
+for _name in (
+    'ValueAnalysis', 'ValueHierarchy', 'ConflictAnalysis', 'ConflictNature',
+    'ImpactAssessment', 'ValueImpact', 'HarmonyOptimization', 'BalanceOptimization',
+):
+    globals()[_name] = StubObject
+
+
 class ResolutionStrategy:
     """Stub for resolution strategy return type."""
     def __init__(self, **kwargs):
@@ -22,7 +31,7 @@ class ValueConflictResolver:
         self.impact_assessor = ImpactAssessor()
         self.harmony_optimizer = HarmonyOptimizer()
 
-class ValueAnalyzer:
+class ValueAnalyzer(RuntimeStubMixin):
     """
     Analyzes values and their relationships
     """
@@ -45,7 +54,7 @@ class ValueAnalyzer:
             situational_priorities=self.determine_priorities(values)
         )
 
-class ConflictIdentifier:
+class ConflictIdentifier(RuntimeStubMixin):
     """
     Identifies and analyzes value conflicts
     """
@@ -68,7 +77,7 @@ class ConflictIdentifier:
             resolution_complexity=self.assess_complexity(conflict)
         )
 
-class ResolutionEngine:
+class ResolutionEngine(RuntimeStubMixin):
     """
     Implements strategies for resolving value conflicts
     """
@@ -91,7 +100,7 @@ class ResolutionEngine:
             integration_method=self.design_integration(conflict)
         )
 
-class ImpactAssessor:
+class ImpactAssessor(RuntimeStubMixin):
     """
     Assesses impact of resolution strategies
     """
@@ -114,7 +123,7 @@ class ImpactAssessor:
             future_implications=self.assess_future_impact(strategy)
         )
 
-class HarmonyOptimizer:
+class HarmonyOptimizer(RuntimeStubMixin):
     """
     Optimizes harmony between conflicting values
     """

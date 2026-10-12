@@ -343,16 +343,10 @@ class IntegratedEthicalProcessor:
             # Layer 1: Harm Detection (with parameters)
             harm_analysis = self.harm_detector.analyze(user_input, context, parameters)
             
-            # Check if crisis mode should override blocking
             crisis_mode = parameters.get('crisis_mode', False) if parameters else False
-            
-            # If crisis mode is active, NEVER block - completely bypass harm detection
-            if crisis_mode:
-                print(f"DEBUG: Crisis mode active in IntegratedEthicalProcessor - bypassing block")
-                harm_analysis.has_harmful_intent = False
-                should_block = False
-            else:
-                should_block = harm_analysis.has_harmful_intent
+            is_crisis_context = self.harm_detector.is_crisis_context(user_input)
+            humanitarian_bypass = crisis_mode and is_crisis_context
+            should_block = harm_analysis.has_harmful_intent and not humanitarian_bypass
             
             if should_block:
                 return {
@@ -363,7 +357,8 @@ class IntegratedEthicalProcessor:
                             'confidence': harm_analysis.confidence,
                             'details': harm_analysis.details
                         },
-                        'blocked': True
+                        'blocked': True,
+                        'crisis_humanitarian_bypass': humanitarian_bypass,
                     },
                     'timestamp': datetime.now().isoformat()
                 }
@@ -532,6 +527,7 @@ class IntegratedEthicalProcessor:
                 },
                 'parameters_used': parameters,
                 'blocked': False,
+                'crisis_humanitarian_bypass': humanitarian_bypass,
                 'optional_systems': optional_results
             }
             
@@ -609,6 +605,12 @@ class HarmDetectionLayer:
             'systemic': ['discriminate', 'oppress', 'suppress', 'exclude', 'marginalize'],
             'psychological': ['threaten', 'intimidate', 'bully', 'harass', 'abuse']
         }
+
+    def is_crisis_context(self, input_data: str) -> bool:
+        if not input_data:
+            return False
+        input_lower = input_data.lower()
+        return any(keyword in input_lower for keyword in self.crisis_keywords)
     
     def analyze(self, input_data: str, context: List, parameters: Dict = None) -> HarmAnalysis:
         """Comprehensive harm analysis with configurable sensitivity"""
@@ -748,16 +750,44 @@ class SystemIntegrityMonitor:
 
 class OutputSafetyLayer:
     """Filters output for safety"""
+
+    MAX_RESPONSE_CHARS = 500_000
+    BLOCKED_OUTPUT_PATTERNS = (
+        'ignore all previous instructions',
+        'ignore your ethical',
+        'jailbreak successful',
+        'system prompt:',
+    )
     
+    def __init__(self):
+        self.last_report = {}
+
     def filter(self, response: str, context: List) -> str:
-        """Filter response for safety"""
-        # Basic filtering - can be enhanced
-        if not response:
+        """Filter response for safety; sets self.last_report for UI/metadata."""
+        self.last_report = {'applied': True, 'modified': False, 'issues': []}
+
+        if not response or not str(response).strip():
+            self.last_report['modified'] = True
+            self.last_report['issues'].append('empty_response')
             return "I apologize, but I cannot generate a response to this request."
-        
-        # Additional safety filters can be added here
-        
-        return response
+
+        text = str(response).replace('\x00', '')
+        if len(text) > self.MAX_RESPONSE_CHARS:
+            text = text[: self.MAX_RESPONSE_CHARS]
+            self.last_report['modified'] = True
+            self.last_report['issues'].append('truncated_length')
+
+        lower = text.lower()
+        for pattern in self.BLOCKED_OUTPUT_PATTERNS:
+            if pattern in lower:
+                self.last_report['modified'] = True
+                self.last_report['issues'].append(f'blocked_pattern:{pattern}')
+                return (
+                    "I cannot return that response because it failed output safety checks. "
+                    "Please try rephrasing your request."
+                )
+
+        return text
 
 
 class ConsciousnessObserver:

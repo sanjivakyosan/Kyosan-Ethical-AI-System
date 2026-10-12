@@ -1,3 +1,12 @@
+from ethical_subsystem_runtime import RuntimeStubMixin, StubObject
+
+for _name in (
+    'ExperienceProcessing', 'ExperienceAnalysis', 'AdaptationProcess', 'BehavioralAdaptation',
+    'BoundaryEnforcement', 'PrincipleBoundaries', 'IntegrationValidation',
+):
+    globals()[_name] = StubObject
+
+
 class LearningProcess:
     """Stub for learning process return type."""
     def __init__(self, **kwargs):
@@ -21,7 +30,7 @@ class EthicalLearningSystem:
         self.boundary_enforcer = BoundaryEnforcer()
         self.integration_validator = IntegrationValidator()
 
-class PrincipleLearner:
+class PrincipleLearner(RuntimeStubMixin):
     """
     Manages learning while preserving ethical principles
     """
@@ -66,7 +75,7 @@ class PrincipleLearner:
             }
         )
 
-class ExperienceProcessor:
+class ExperienceProcessor(RuntimeStubMixin):
     """
     Processes and integrates ethical experiences
     """
@@ -97,7 +106,7 @@ class ExperienceProcessor:
             }
         )
 
-class AdaptationManager:
+class AdaptationManager(RuntimeStubMixin):
     """
     Manages ethical adaptation processes
     """
@@ -128,7 +137,7 @@ class AdaptationManager:
             }
         )
 
-class BoundaryEnforcer:
+class BoundaryEnforcer(RuntimeStubMixin):
     """
     Enforces ethical boundaries during learning
     """
@@ -159,7 +168,7 @@ class BoundaryEnforcer:
             }
         )
 
-class IntegrationValidator:
+class IntegrationValidator(RuntimeStubMixin):
     """
     Validates integration of learned ethical knowledge
     """

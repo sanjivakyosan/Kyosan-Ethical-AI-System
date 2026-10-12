@@ -1,3 +1,13 @@
+from ethical_subsystem_runtime import RuntimeStubMixin, StubObject
+
+for _name in (
+    'StructuralBiasAnalysis', 'PowerStructureAnalysis', 'AlgorithmicBiasAnalysis',
+    'ProcessingBiasMetrics', 'DataBiasAnalysis', 'SamplingBiasMetrics',
+    'InteractionBiasAnalysis', 'FeedbackLoopAnalysis',
+):
+    globals()[_name] = StubObject
+
+
 class CognitiveBiasAnalysis:
     """Stub for cognitive bias analysis return type."""
     def __init__(self, **kwargs):
@@ -22,7 +32,7 @@ class BiasDetectionSystem:
         self.data_bias_analyzer = DataBiasAnalyzer()
         self.interaction_bias_detector = InteractionBiasDetector()
 
-class CognitiveBiasDetector:
+class CognitiveBiasDetector(RuntimeStubMixin):
     """
     Detects cognitive biases in decision processes
     """
@@ -45,7 +55,7 @@ class CognitiveBiasDetector:
             counter_evidence=self.analyze_counter_evidence_handling(data)
         )
 
-class StructuralBiasDetector:
+class StructuralBiasDetector(RuntimeStubMixin):
     """
     Detects systemic and structural biases
     """
@@ -68,7 +78,7 @@ class StructuralBiasDetector:
             influence_networks=self.analyze_influence_patterns(data)
         )
 
-class AlgorithmicBiasDetector:
+class AlgorithmicBiasDetector(RuntimeStubMixin):
     """
     Detects biases in algorithmic processing
     """
@@ -91,7 +101,7 @@ class AlgorithmicBiasDetector:
             error_distribution=self.analyze_error_patterns(data)
         )
 
-class DataBiasAnalyzer:
+class DataBiasAnalyzer(RuntimeStubMixin):
     """
     Analyzes bias in data and its representations
     """
@@ -114,7 +124,7 @@ class DataBiasAnalyzer:
             representation_balance=self.analyze_balance(data)
         )
 
-class InteractionBiasDetector:
+class InteractionBiasDetector(RuntimeStubMixin):
     """
     Detects bias in system interactions and feedback loops
     """

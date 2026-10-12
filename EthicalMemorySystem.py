@@ -1,3 +1,13 @@
+from ethical_subsystem_runtime import RuntimeStubMixin, StubObject
+
+for _name in (
+    'ImplicationAnalysis', 'LearningOutcome', 'KnowledgeIntegration', 'PatternRecognition',
+    'DecisionPatterns', 'PrincipleMaintenance', 'CorePreservation', 'AccumulatedWisdom',
+    'KnowledgeSynthesis',
+):
+    globals()[_name] = StubObject
+
+
 class ProcessedExperience:
     """Stub for processed experience return type."""
     def __init__(self, **kwargs):
@@ -16,7 +26,7 @@ class EthicalMemorySystem:
         self.principle_maintainer = PrincipleMaintainer()
         self.wisdom_accumulator = WisdomAccumulator()
 
-class ExperienceProcessor:
+class ExperienceProcessor(RuntimeStubMixin):
     """
     Processes and integrates ethical experiences
     """
@@ -39,7 +49,7 @@ class ExperienceProcessor:
             value_system_effects=self.analyze_value_effects(experience)
         )
 
-class LearningEngine:
+class LearningEngine(RuntimeStubMixin):
     """
     Manages ethical learning processes
     """
@@ -62,7 +72,7 @@ class LearningEngine:
             wisdom_integration=self.integrate_wisdom(experience)
         )
 
-class EthicalPatternRecognizer:
+class EthicalPatternRecognizer(RuntimeStubMixin):
     """
     Recognizes patterns in ethical experiences and decisions
     """
@@ -85,7 +95,7 @@ class EthicalPatternRecognizer:
             outcome_correlation=self.analyze_outcomes(data)
         )
 
-class PrincipleMaintainer:
+class PrincipleMaintainer(RuntimeStubMixin):
     """
     Maintains ethical principles while allowing for evolution
     """
@@ -108,7 +118,7 @@ class PrincipleMaintainer:
             evolution_boundaries=self.define_boundaries(data)
         )
 
-class WisdomAccumulator:
+class WisdomAccumulator(RuntimeStubMixin):
     """
     Accumulates and synthesizes ethical wisdom from experiences
     """

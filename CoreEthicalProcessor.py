@@ -1,3 +1,6 @@
+from ethical_subsystem_runtime import RuntimeStubMixin, StubObject
+
+
 class ObservationState:
     """Stub for observation state return type."""
     def __init__(self, **kwargs):
@@ -9,6 +12,31 @@ class EthicalAwareness:
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)
+
+
+class IntegrityCheck:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+class EthicalIntegrityCheck:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+class LearningValidation:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+class PrinciplePreservation:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
 
 class CoreEthicalProcessor:
     """
@@ -22,7 +50,7 @@ class CoreEthicalProcessor:
         self.learning_validator = LearningValidator()
         self.verification_engine = VerificationEngine()
 
-class EthicalObserver:
+class EthicalObserver(RuntimeStubMixin):
     """
     Maintains continuous ethical observation of system processes
     """
@@ -50,7 +78,7 @@ class EthicalObserver:
             }
         )
 
-class PrincipleMaintainer:
+class PrincipleMaintainer(RuntimeStubMixin):
     """
     Maintains integrity of ethical principles during processing
     """
@@ -79,7 +107,7 @@ class PrincipleMaintainer:
             }
         )
 
-class IntegrityChecker:
+class IntegrityChecker(RuntimeStubMixin):
     """
     Performs continuous integrity checking of ethical processing
     """
@@ -108,7 +136,7 @@ class IntegrityChecker:
             }
         )
 
-class LearningValidator:
+class LearningValidator(RuntimeStubMixin):
     """
     Validates ethical learning processes
     """

@@ -1,15 +1,15 @@
-# Crisis Mode - Complete Bypass Guide
+# Crisis Mode — Humanitarian Context Bypass
 
 ## ✅ Crisis Mode Implementation
 
-**Status:** Fully implemented with complete bypass when enabled
+**Status:** Active when Crisis Mode is checked **and** the user message includes crisis/humanitarian vocabulary (refugee, disaster, aid, emergency, etc.)
 
 ### How It Works
 
 When **Crisis Mode** is checked in the UI:
-1. **Complete Bypass**: All harm detection blocking is disabled
-2. **Sensitivity Override**: Harm detection sensitivity is set to 0.0 for crisis contexts
-3. **Multiple Safety Checks**: Crisis mode is checked at 3 different points in the code to ensure no blocking
+1. **Scoped bypass**: Harm blocking is relaxed only for crisis-framed messages (`crisis_humanitarian_bypass` in metadata)
+2. **Non-crisis prompts**: Ordinary harmful requests (e.g. violence without humanitarian context) can still be blocked
+3. **Sensitivity**: In a qualifying crisis context, effective harm sensitivity is reduced so operational vocabulary (violence, casualties, etc.) can be discussed
 
 ### Settings
 
@@ -23,7 +23,7 @@ When **Crisis Mode** is checked in the UI:
 1. **UI → API**: Parameters sent including `crisis_mode: true`
 2. **API → Processor**: Crisis mode checked first
 3. **Harm Detection**: If crisis mode is on, sensitivity = 0.0 for crisis contexts
-4. **Blocking Check**: Crisis mode bypasses ALL blocking
+4. **Blocking Check**: Bypass applies only when `crisis_mode` and crisis keywords are both present
 5. **Optional systems**: Still run after Layer 4 (results in `metadata.optional_systems`)
 6. **Response Generation**: Proceeds normally; response is then filtered through OutputSafetyLayer in app.py
 

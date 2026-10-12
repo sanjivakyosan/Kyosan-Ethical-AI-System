@@ -1,3 +1,12 @@
+from ethical_subsystem_runtime import RuntimeStubMixin, StubObject
+
+for _name in (
+    'FastPathDecision', 'DeepPathDecision', 'DeepAnalysis', 'PriorityManagement',
+    'PriorityAssignment', 'EmergencyResponse', 'ImmediateAction', 'DecisionCoordination',
+):
+    globals()[_name] = StubObject
+
+
 class QuickAssessment:
     """Stub for quick assessment return type."""
     def __init__(self, **kwargs):
@@ -16,7 +25,7 @@ class RealTimeDecisionFramework:
         self.emergency_handler = EmergencyHandler()
         self.decision_coordinator = DecisionCoordinator()
 
-class FastPathProcessor:
+class FastPathProcessor(RuntimeStubMixin):
     """
     Handles high-speed ethical decisions
     """
@@ -56,7 +65,7 @@ class FastPathProcessor:
             }
         )
 
-class DeepPathProcessor:
+class DeepPathProcessor(RuntimeStubMixin):
     """
     Handles thorough ethical analysis for complex decisions
     """
@@ -91,7 +100,7 @@ class DeepPathProcessor:
             }
         )
 
-class PriorityManager:
+class PriorityManager(RuntimeStubMixin):
     """
     Manages decision priorities and scheduling
     """
@@ -127,7 +136,7 @@ class PriorityManager:
             }
         )
 
-class EmergencyHandler:
+class EmergencyHandler(RuntimeStubMixin):
     """
     Handles emergency situations requiring immediate decisions
     """
@@ -157,7 +166,7 @@ class EmergencyHandler:
             }
         )
 
-class DecisionCoordinator:
+class DecisionCoordinator(RuntimeStubMixin):
     """
     Coordinates between different decision paths
     """

@@ -1,3 +1,12 @@
+from ethical_subsystem_runtime import RuntimeStubMixin, StubObject
+
+for _name in (
+    'AccessControl', 'Authentication', 'IntegrityProtection', 'AuditManagement',
+    'ActivityLogging', 'TamperDetection', 'IntegrityMonitoring', 'EncryptionManagement',
+):
+    globals()[_name] = StubObject
+
+
 class ParameterProtection:
     """Stub for parameter protection return type."""
     def __init__(self, **kwargs):
@@ -15,7 +24,7 @@ class EthicalSecuritySystem:
         self.tamper_detector = TamperDetector()
         self.encryption_manager = EncryptionManager()
 
-class AccessController:
+class AccessController(RuntimeStubMixin):
     """
     Controls access to ethical system components
     """
@@ -52,7 +61,7 @@ class AccessController:
             }
         )
 
-class IntegrityProtector:
+class IntegrityProtector(RuntimeStubMixin):
     """
     Protects integrity of ethical parameters and decisions
     """
@@ -88,7 +97,7 @@ class IntegrityProtector:
             }
         )
 
-class AuditManager:
+class AuditManager(RuntimeStubMixin):
     """
     Manages comprehensive audit trail
     """
@@ -124,7 +133,7 @@ class AuditManager:
             }
         )
 
-class TamperDetector:
+class TamperDetector(RuntimeStubMixin):
     """
     Detects and responds to tampering attempts
     """
@@ -160,7 +169,7 @@ class TamperDetector:
             }
         )
 
-class EncryptionManager:
+class EncryptionManager(RuntimeStubMixin):
     """
     Manages encryption for ethical system components
     """
