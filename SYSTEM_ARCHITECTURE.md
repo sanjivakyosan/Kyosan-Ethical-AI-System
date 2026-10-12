@@ -2,7 +2,7 @@
 
 **Version:** 1.0  
 **Date:** February 2026
-**Copyright © Charles Roux**
+**Copyright © Charles Roux 2026**
 
 ---
 

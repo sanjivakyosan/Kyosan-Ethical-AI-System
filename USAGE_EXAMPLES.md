@@ -2,7 +2,7 @@
 
 **Version:** 1.1  
 **Date:** February 2026  
-**Copyright © Charles Roux**
+**Copyright © Charles Roux 2026**
 
 Responses include `metadata.optional_systems` with per-system run/error status for the ethical subsystems invoked after Layer 4. API responses are filtered through OutputSafetyLayer before return.
 

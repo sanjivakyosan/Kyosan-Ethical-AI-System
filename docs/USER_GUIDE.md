@@ -1,6 +1,6 @@
 # Kyosan Ethical AI System — User Guide
 
-**Copyright © Charles Roux**
+**Copyright © Charles Roux 2026**
 
 This guide covers core processing, every parameter in detail, and a step-by-step installation for beginners.
 
@@ -542,4 +542,4 @@ When blocked, the user receives a clear message and no AI response is generated.
 
 ---
 
-**Copyright © Charles Roux** — Kyosan Ethical AI System
+**Copyright © Charles Roux 2026** — Kyosan Ethical AI System

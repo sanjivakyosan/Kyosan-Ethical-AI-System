@@ -1,6 +1,6 @@
 """
 Monitoring and Logging Framework for Kyosan Ethical AI System
-Copyright © Charles Roux
+Copyright © Charles Roux 2026
 """
 import logging
 import json

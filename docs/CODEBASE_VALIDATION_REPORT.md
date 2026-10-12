@@ -1,6 +1,6 @@
 # Codebase Validation Report — Kyosan Ethical AI System
 
-**Copyright © Charles Roux**
+**Copyright © Charles Roux 2026**
 **Date:** February 22, 2026  
 **Scope:** Integrity verification, system implementation check, readiness for use and testing.
 
